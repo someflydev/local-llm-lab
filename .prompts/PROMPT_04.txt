@@ -1,0 +1,50 @@
+Implement a full RAG QA pipeline.
+
+Create:
+1) src/lab/prompts/rag_system.txt
+2) src/lab/prompts/rag_user.txt
+
+Prompt behavior requirements:
+- MUST only use retrieved context.
+- MUST cite sources (path + chunk_id) in the answer.
+- If context is insufficient: respond exactly:
+  "I don't know from the provided documents."
+
+Implement:
+3) src/lab/rag.py
+- answer_question(question, index_dir, chat_model_name, embed_model_name, k, temperature, num_ctx)
+- steps:
+  - retrieve top-k chunks
+  - build a single context block with separators and source labels
+  - call LangChain ChatOllama with the templates
+  - return:
+    - answer_text
+    - citations (list)
+    - retrieved (list with scores)
+    - latency_ms
+
+Update CLI:
+- lab rag --index runs/index --question "..." [--model] [--embed-model] [--k] [--num-ctx] [--temperature]
+
+Create eval questions:
+- data/rag_eval_questions.jsonl (20 items)
+Each line includes:
+- id
+- question
+- answerable: true/false
+- expected_keywords: [..]  (empty for unanswerable)
+- notes
+
+Logging:
+- Log each rag call to runs/logs/*.jsonl with event="rag" and payload containing:
+  - question_id
+  - model
+  - embed_model
+  - k
+  - num_ctx
+  - latency_ms
+  - citations
+  - answer_preview
+
+Verification:
+- Demonstrate 2 answerable and 1 unanswerable behavior (expected refusal).

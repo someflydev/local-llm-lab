@@ -1,0 +1,20 @@
+Create docs/models.md with a practical, hardware-aware guide.
+
+Must include:
+- Why Llama 3 is the default.
+- Why 8B-class models are the realistic sweet spot for 18GB unified memory.
+- Why num_ctx defaults to 4096 and when to try 8192.
+- Storage strategy with ~115GB free:
+  - recommend minimal pulls
+  - suggest removing unused models
+
+Include a table:
+Task | Default model | Default settings | Why | When to change
+
+Ensure:
+- You NEVER assume candidates (deepseek/kimi) exist.
+- You explain how `lab models status` and `lab models recommend` work.
+
+Also add:
+- docs/operators_guide.md
+This should mirror the Operator’s Guide steps (brew installs, starting ollama, minimal model pulls, uv python install).

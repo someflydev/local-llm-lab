@@ -1,0 +1,28 @@
+Implement a minimal local web UI using FastAPI + Jinja2 templates.
+
+Create:
+- src/lab/web/app.py
+- src/lab/web/templates/
+  - base.html
+  - index.html
+  - chat.html
+  - rag.html
+  - runs.html
+  - run_detail.html
+
+Routes:
+- GET / (links)
+- GET/POST /chat
+- GET/POST /rag
+- GET /runs (list most recent runs + summaries)
+- GET /runs/{run_id}
+
+UI requirements:
+- Show model used, latency, and for RAG show citations + retrieved snippets.
+
+CLI:
+- lab web --port 8000
+
+Verification:
+- `uv run lab web --port 8000`
+- Visit http://127.0.0.1:8000

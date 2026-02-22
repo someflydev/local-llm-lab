@@ -1,0 +1,52 @@
+Now that the repo is runnable, generate the real README.md.
+
+README must include:
+1) What this lab is
+2) Quickstart:
+   - ./scripts/bootstrap_mac.sh
+   - uv run lab doctor
+   - uv run lab models recommend --task chat
+   - uv run lab chat --prompt "hello"
+3) RAG tutorial:
+   - uv run lab ingest ...
+   - uv run lab rag ...
+4) Eval tutorial:
+   - uv run lab run --config ...
+   - uv run lab report ...
+5) Profiling tutorial:
+   - uv run lab profile ...
+6) Web UI (optional):
+   - uv run lab web ...
+7) Ludwig workflows:
+   - how to install optional extras
+   - how to run prompting workflow
+8) Troubleshooting checklist:
+   - ollama not running
+   - no models installed
+   - embeddings model missing
+   - slow performance / swap pressure
+   - context too large
+9) Appendices:
+   - Glossary (20+ terms)
+   - “First 60 minutes” learning path
+
+Also create:
+- docs/glossary.md (20+ terms; overlap with README is fine)
+- docs/rag_deep_dive.md (clear beginner explanation + how this repo implements RAG)
+- docs/neural_networks_101.md (non-mathy, conceptual)
+
+Glossary terms must include at least:
+LLM, Neural Network, Transformer, Attention, Token, Context Window, Inference,
+Prompt, System Prompt, Temperature, Hallucination, RAG, Embedding, Vector Store,
+Cosine Similarity, Chunking, Retrieval, Evaluation, Fine-tuning, In-context Learning,
+Quantization, Unified Memory.
+
+Verification checklist at end:
+- doctor passes (or warns)
+- chat works
+- ingest works
+- retrieve works
+- rag works (including refusal)
+- run/report works
+- profile works
+- web works (optional)

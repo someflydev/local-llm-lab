@@ -1,0 +1,85 @@
+Create the repository scaffold and baseline implementation using uv/ruff/orjson/pydantic.
+
+You must:
+- Create pyproject.toml configured for uv, ruff, and a console script `lab`.
+- Create uv.lock by instructing how to run uv sync (do not commit instructions only; still create the repo files now).
+- Use src/ layout: src/lab/...
+- Create a minimal Makefile OR scripts/ commands (either is fine), but prefer scripts/ with explicit steps.
+- Add .gitignore that ignores runs/, .venv-like artifacts if any appear, __pycache__, .ruff_cache, .pytest_cache, etc.
+
+Dependencies (in pyproject.toml):
+- httpx
+- rich
+- pydantic (v2)
+- orjson
+- pyyaml
+- langchain
+- langchain-ollama
+- jinja2 (for optional web UI later, OK to add now)
+- fastapi + uvicorn (optional web UI later; OK to add now)
+
+Implement files:
+
+1) src/lab/cli.py
+- Use argparse with subcommands:
+  - doctor
+  - models list
+  - models status (stub ok for now; fully implemented in PROMPT_02)
+  - chat
+
+2) src/lab/doctor.py
+- Checks:
+  - Running on macOS (print info, don’t hard fail).
+  - uv available (shell out `uv --version`).
+  - ollama available (`ollama --version`).
+  - ollama reachable via HTTP (default http://127.0.0.1:11434).
+  - `ollama list` output parse.
+  - If llama3 installed, say it’s default; else recommend `ollama pull llama3`.
+- Output should be friendly with PASS/WARN/FAIL, using rich.
+
+3) src/lab/ollama_client.py
+- A tiny client that can:
+  - list models (via `ollama list` OR HTTP endpoint if you choose)
+  - chat generate (use Ollama HTTP API /api/chat)
+- Must support:
+  - model name
+  - prompt
+  - temperature
+  - num_ctx
+- Must return structured output: text + latency + raw response snippet
+
+4) src/lab/logging_jsonl.py
+- JSONL logger using orjson.
+- Ensure each record includes:
+  - ts (ISO)
+  - event
+  - payload (dict)
+- Write to runs/logs/<date>.jsonl by default; create dirs if missing.
+
+Create scripts:
+
+A) scripts/bootstrap_mac.sh
+Assume Homebrew is installed already.
+It should:
+- verify brew packages: ollama uv ruff git jq ripgrep fd fzf
+- verify ollama is running (try HTTP, if not: suggest `brew services start ollama` or `ollama serve`)
+- verify python via uv: `uv python install 3.12` (if missing)
+- run `uv sync`
+- run `uv run lab doctor`
+
+B) scripts/verify.sh
+- `uv run lab doctor`
+- `uv run lab models list`
+- Run a one-shot inference:
+  - if llama3 exists, use it
+  - else pick the first installed model
+  - if none installed, print instructions and exit 0 with warnings (not failure)
+
+Also create:
+- README.md as a minimal placeholder stating “README will be generated at PROMPT_10 after the lab is runnable.”
+
+Provide:
+- Full contents of every created file.
+- Exact commands to run:
+  - ./scripts/bootstrap_mac.sh
+  - ./scripts/verify.sh

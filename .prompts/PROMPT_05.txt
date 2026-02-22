@@ -1,0 +1,41 @@
+Implement an experiment harness.
+
+Create:
+- experiments/rag_baseline.yaml
+- experiments/rag_compare_models.yaml
+
+Config fields:
+- name
+- task: rag_eval
+- chat_models: [..]
+- embed_model: (string or "auto")
+- k
+- num_ctx
+- temperature
+- chunk_size_chars
+- overlap_chars
+- dataset_path: data/rag_eval_questions.jsonl
+
+Implement:
+1) src/lab/runner.py
+- run_config(path) creates runs/<run_id>/
+- outputs:
+  - results.jsonl (one row per question per model)
+  - summary.json (aggregates)
+- scoring:
+  - For answerable: +1 if all expected_keywords appear (case-insensitive) OR at least N of them (choose a reasonable heuristic, document it).
+  - For unanswerable: +1 if response includes exact refusal string.
+  - Record latency stats.
+
+2) src/lab/reporting.py
+- load run dir
+- print summary tables (rich)
+- compare two runs
+
+CLI:
+- lab run --config experiments/rag_baseline.yaml
+- lab report --run runs/<run_id>
+- lab compare --runs runs/<id1> runs/<id2>
+
+Verification:
+- Run baseline using recommended models (llama3 + nomic-embed-text).

@@ -1,0 +1,58 @@
+Implement embeddings + ingestion + retrieval WITHOUT FAISS/Chroma.
+
+Design:
+- Use sqlite as a local store in runs/index/index.sqlite
+- Store:
+  - doc_id
+  - path
+  - chunk_id
+  - text
+  - embedding (JSON array, stored as TEXT; use orjson dumps)
+- Retrieval:
+  - embed query via LangChain Ollama embeddings
+  - load all embeddings for small corpora (OK) and compute cosine similarity in Python
+  - return top-k with scores
+
+Create corpus:
+- data/corpus/ with 10 markdown files (short, written content) covering:
+  - what RAG is
+  - how this lab is structured
+  - model selection for M3 Pro 18GB
+  - prompt templates and refusal behavior
+  - evaluation harness concepts
+  - profiling concepts
+  - Ludwig overview
+  - common failure modes (hallucination, context overflow)
+
+Implement:
+1) src/lab/text_chunking.py
+- deterministic chunking:
+  - chunk_size_chars default 900
+  - overlap_chars default 120
+
+2) src/lab/ingest.py
+- read files from corpus dir
+- chunk deterministically
+- embed each chunk using LangChain OllamaEmbeddings
+- write sqlite index
+- write runs/ingest.json metadata:
+  - embedding model
+  - file count
+  - chunk count
+  - chunk params
+  - timestamp
+
+3) src/lab/retrieval.py
+- retrieve(query, k) -> list of:
+  - path, chunk_id, score, snippet, full_text
+
+CLI:
+- lab ingest --corpus data/corpus --index runs/index --embed-model (optional)
+- lab retrieve --index runs/index --query "..." --k 5 --embed-model (optional)
+
+Defaults:
+- Embed model is recommended by: lab models recommend --task embeddings
+- If embeddings model missing, print suggested pulls and exit nonzero.
+
+Verification:
+- Provide one example query and show the expected output shape.

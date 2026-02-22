@@ -1,0 +1,130 @@
+Implement a declarative model registry and recommendations.
+
+Create experiments/models.yaml with EXACT content below (no summarizing):
+
+---BEGIN experiments/models.yaml---
+
+version: 2
+
+hardware_profiles:
+  mac_m3_pro_18gb_sonoma_14_5:
+    unified_memory_gb: 18
+    free_storage_gb: 115
+    recommended_max_class: "8b"
+    safe_default_num_ctx: 4096
+    cautious_max_num_ctx: 8192
+    notes:
+      - "Prioritize 8B-class models and small embedding models."
+      - "Avoid pulling too many models due to storage."
+      - "If you experience swap pressure, reduce num_ctx and use smaller models."
+
+known_good:
+  - name: llama3
+    provider: ollama
+    roles: [chat, rag_qa, general]
+    default_temperature: 0.2
+    default_num_ctx: 4096
+    priority: 110
+    notes: "Primary stable default; best fit for 18GB unified memory when kept to 8B-class."
+
+preferred_variants:
+  - name: llama3.1
+    provider: ollama
+    roles: [chat, rag_qa]
+    default_temperature: 0.2
+    default_num_ctx: 4096
+    priority: 95
+    notes: "Variant if present; keep context conservative."
+  - name: llama3.2
+    provider: ollama
+    roles: [chat, rag_qa, fast]
+    default_temperature: 0.3
+    default_num_ctx: 4096
+    priority: 92
+    notes: "Often smaller/faster variant."
+
+embedding_models:
+  - name: nomic-embed-text
+    provider: ollama
+    roles: [embeddings]
+    priority: 110
+    notes: "Best default embedding model for this hardware profile."
+  - name: mxbai-embed-large
+    provider: ollama
+    roles: [embeddings]
+    priority: 95
+    notes: "Fallback embedding model; may be heavier."
+
+candidates_reasoning:
+  - name: deepseek-r1
+    provider: ollama
+    roles: [reasoning, rag_qa]
+    default_temperature: 0.1
+    default_num_ctx: 4096
+    priority: 70
+    notes: "Candidate only; keep num_ctx conservative on 18GB."
+
+candidates_long_context:
+  - name: kimi
+    provider: ollama
+    roles: [chat, long_context]
+    default_temperature: 0.2
+    default_num_ctx: 8192
+    priority: 65
+    notes: "Candidate only; long context may increase memory pressure."
+
+fallback_rules:
+  prefer_roles:
+    rag_qa: [chat, reasoning, general]
+    chat: [chat, general]
+    embeddings: [embeddings]
+  min_priority: 50
+  notes: "If llama3 is not installed, select highest priority available model matching role."
+
+---END experiments/models.yaml---
+
+Now implement:
+
+1) src/lab/modelspec.py
+- Define pydantic models:
+  - HardwareProfile
+  - ModelEntry
+  - ModelsConfig (top-level)
+- Load experiments/models.yaml.
+- Provide:
+  - get_hardware_profile(profile_name="mac_m3_pro_18gb_sonoma_14_5")
+  - iter_all_model_entries()
+
+2) src/lab/model_registry.py
+- Discover installed models by running `ollama list` and parsing names.
+- Provide:
+  - installed_models() -> set[str]
+  - policy_models() -> list[ModelEntry]
+  - match_installed_to_policy() -> dict buckets:
+    - available_known_good
+    - available_preferred_variants
+    - available_embeddings
+    - available_candidates
+    - missing_recommended (policy models not installed)
+- Provide recommendation:
+  - recommend(task: "chat"|"rag_qa"|"embeddings") -> dict with:
+    - chosen_model (or None)
+    - reason
+    - suggested_pulls (list)
+    - defaults: temperature, num_ctx based on hardware profile + entry defaults
+- Ranking rules:
+  1) Prefer llama3 if installed for chat and rag_qa.
+  2) Prefer embedding_models for embeddings task.
+  3) Otherwise select the highest priority installed model whose roles match task or fallback role mapping.
+
+3) Update CLI (src/lab/cli.py) to fully implement:
+- lab models status
+- lab models recommend --task chat|rag_qa|embeddings
+
+4) Update doctor output:
+- Print detected hardware profile values used for defaults.
+- Warn if free storage is “tight” (you can’t detect it reliably; allow an env override FREE_STORAGE_GB or just print advisory. Do not hard-fail.)
+
+Verification:
+- `uv run lab models status` prints a friendly report.
+- `uv run lab models recommend --task chat` selects llama3 when installed, else suggests pulling it.

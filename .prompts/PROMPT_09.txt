@@ -1,0 +1,30 @@
+Implement performance profiling.
+
+Create:
+1) src/lab/profile.py
+- profile(model, prompt_file, n, num_ctx, temperature)
+- measure:
+  - wall time per run
+  - average
+  - chars/sec proxy
+- log to runs/profile.jsonl
+
+2) data/prompts/profile_prompt.txt
+- fixed prompt for repeatable profiling
+
+3) docs/perf.md
+Explain:
+- unified memory and swap pressure
+- quantization (high-level)
+- context window tradeoffs
+- practical knobs:
+  - lower num_ctx
+  - smaller model
+  - fewer retrieved chunks (k)
+  - smaller chunk size
+
+CLI:
+- lab profile --model llama3 --n 5 --prompt-file data/prompts/profile_prompt.txt
+
+Verification:
+- show example output format.

@@ -1,0 +1,30 @@
+Add Ludwig workflows in a way that is honest about what is feasible on M3 Pro 18GB.
+
+Dependencies:
+- Add ludwig to pyproject dependencies if it can be installed reasonably.
+- If Ludwig brings heavy deps, implement as an “optional extra”:
+  - [project.optional-dependencies]
+  - ludwig = ["ludwig[llm]"] (or appropriate) and document how to install via `uv sync --extra ludwig`.
+
+Create docs:
+- docs/ludwig_workflows.md
+Explain:
+- Prompting vs ICL vs fine-tuning
+- What can run locally on 18GB
+- How to keep datasets tiny and runs short
+
+Create datasets:
+- data/ludwig/prompting.jsonl (50-150 rows, small)
+- Include an instruction-style task aligned with the corpus domain (CLI/RAG tips).
+
+Create configs:
+- ludwig/prompting.yaml (runnable)
+- ludwig/icl.yaml (if supported; otherwise “template” clearly marked)
+- ludwig/tiny_finetune.yaml (template; only runnable if feasible)
+
+Create scripts:
+- scripts/run_ludwig_prompting.sh
+- Must run at least one Ludwig workflow successfully if installed.
+
+Verification:
+- Document exact `uv` commands to install extras and run the workflow.
