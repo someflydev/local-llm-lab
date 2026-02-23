@@ -1,0 +1,17 @@
+# Template configuration for tiny local fine-tune experiments.
+# Only run if you confirm memory usage and Ludwig version compatibility.
+
+workflow: tiny_finetune_template
+notes:
+  - "Start with tiny datasets and a very small number of steps."
+  - "Monitor swap pressure; stop if the machine becomes unresponsive."
+dataset:
+  train: data/ludwig/prompting.jsonl
+training:
+  max_steps: 25
+  batch_size: 1
+  gradient_accumulation_steps: 1
+task:
+  input_field: instruction
+  output_field: response
+

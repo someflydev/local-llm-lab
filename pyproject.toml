@@ -13,7 +13,7 @@ dependencies = [
   "rich",
   "pydantic>=2",
   "orjson",
-  "pyyaml",
+  "pyyaml>=6.0.3",
   "python-multipart",
   "langchain",
   "langchain-ollama",
@@ -24,6 +24,9 @@ dependencies = [
 
 [project.scripts]
 lab = "lab.cli:main"
+
+[project.optional-dependencies]
+ludwig = ["ludwig"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lab"]

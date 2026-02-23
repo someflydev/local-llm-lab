@@ -1,0 +1,15 @@
+# Template configuration for an in-context learning style Ludwig workflow.
+# Marked as template because exact support/keys may vary by Ludwig version.
+
+workflow: icl_template
+notes:
+  - "Use tiny datasets only on laptop hardware."
+  - "Confirm field names and supported keys against your installed Ludwig version."
+dataset:
+  train: data/ludwig/prompting.jsonl
+examples:
+  shots: 3
+task:
+  input_field: instruction
+  output_field: response
+

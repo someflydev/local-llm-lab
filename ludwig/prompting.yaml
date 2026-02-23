@@ -1,0 +1,26 @@
+model_type: llm
+
+input_features:
+  - name: instruction
+    type: text
+
+output_features:
+  - name: response
+    type: text
+
+trainer:
+  epochs: 1
+  batch_size: 2
+
+preprocessing:
+  global_max_sequence_length: 256
+
+backend:
+  type: local
+
+dataset:
+  train: data/ludwig/prompting.jsonl
+  validation: data/ludwig/prompting.jsonl
+
+# This is intended as a small, local prompting-oriented Ludwig run.
+
