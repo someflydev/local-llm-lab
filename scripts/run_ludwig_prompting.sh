@@ -25,20 +25,33 @@ fi
 echo "[ludwig] Running Ludwig prompting workflow with local dataset..."
 echo "[ludwig] Config: ludwig/prompting.yaml"
 
-version_output="$("${LUDWIG_BIN}" --version 2>&1 || true)"
-if [[ -n "${version_output}" ]]; then
-  echo "[ludwig] Detected version: ${version_output}"
-  if [[ -n "${LUDWIG_EXPECTED_VERSION}" && "${version_output}" != *"${LUDWIG_EXPECTED_VERSION}"* ]]; then
+version_help_output="$("${LUDWIG_BIN}" --help 2>&1 || true)"
+version_line="$(printf '%s\n' "${version_help_output}" | grep -Eom1 'ludwig v[0-9]+(\.[0-9]+)*')"
+if [[ -n "${version_line}" ]]; then
+  echo "[ludwig] Detected version: ${version_line}"
+  if [[ -n "${LUDWIG_EXPECTED_VERSION}" && "${version_line}" != *"${LUDWIG_EXPECTED_VERSION}"* ]]; then
     echo "[ludwig] Warning: this helper is configured for Ludwig ${LUDWIG_EXPECTED_VERSION}." >&2
   fi
 fi
 
-if ! experiment_help="$("${LUDWIG_BIN}" experiment --help 2>&1)"; then
+experiment_help=""
+for help_flag in --help -h; do
+  if experiment_help="$("${LUDWIG_BIN}" experiment "${help_flag}" 2>&1)"; then
+    break
+  fi
+  # Some CLI variants print help to stderr and still return non-zero.
+  if [[ -n "${experiment_help}" && ( "${experiment_help}" == *"usage:"* || "${experiment_help}" == *"--config"* ) ]]; then
+    break
+  fi
+done
+if [[ -z "${experiment_help}" ]]; then
   echo "[ludwig] Failed to inspect 'ludwig experiment --help'. Check your Ludwig install." >&2
   exit 1
 fi
 if [[ "${experiment_help}" != *"--config"* ]]; then
   echo "[ludwig] This Ludwig CLI variant does not advertise '--config' for 'experiment'." >&2
+  echo "[ludwig] Captured 'ludwig experiment --help' output:" >&2
+  printf '%s\n' "${experiment_help}" >&2
   echo "[ludwig] Verify the command syntax for your version before running." >&2
   exit 1
 fi
