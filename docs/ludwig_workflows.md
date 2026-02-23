@@ -24,13 +24,17 @@ Keep runs small:
 ## Installation (isolated Ludwig environment)
 
 Keep Ludwig in a separate virtual environment so the main lab lockfile stays stable.
-This helper path is currently documented/tested against Ludwig `0.7.5`.
-Use Python 3.11 for the isolated Ludwig venv (`ludwig==0.7.5` may resolve `scikit-learn==1.1.3`, which is not Python 3.12-friendly).
+Default helper/CI target: Ludwig `0.10.4` on Python 3.12.
 
 ```bash
-uv venv .venv-ludwig --python 3.11
-uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
+uv venv .venv-ludwig --python 3.12
+uv pip install --python .venv-ludwig/bin/python "ludwig==0.10.4"
 ```
+
+Legacy note: if you intentionally use `ludwig==0.7.5`, prefer Python 3.11 because it may resolve `scikit-learn==1.1.3`, which is not Python 3.12-friendly.
+
+You can override the helper's defaults via environment variables, for example:
+`LUDWIG_EXPECTED_VERSION=0.10.4 LUDWIG_PYTHON_VERSION=3.12 ./scripts/run_ludwig_prompting.sh --check-only`
 
 ## Artifacts in this repo
 
@@ -56,5 +60,6 @@ You can run only the validation checks (without executing the workflow) using:
 
 ## Compatibility notes
 
-- Tested helper target: `ludwig==0.7.5`
+- Default helper target: `ludwig==0.10.4` (CI best-effort check)
+- Legacy fallback: `ludwig==0.7.5` on Python 3.11
 - If you install a different Ludwig version, run `./scripts/run_ludwig_prompting.sh` and read the version/syntax validation output before assuming the command shape is compatible.

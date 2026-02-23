@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-LUDWIG_VENV=".venv-ludwig"
-LUDWIG_BIN="${LUDWIG_VENV}/bin/ludwig"
+LUDWIG_VENV="${LUDWIG_VENV:-.venv-ludwig}"
+LUDWIG_BIN="${LUDWIG_BIN:-${LUDWIG_VENV}/bin/ludwig}"
+LUDWIG_PYTHON_VERSION="${LUDWIG_PYTHON_VERSION:-3.12}"
+LUDWIG_EXPECTED_VERSION="${LUDWIG_EXPECTED_VERSION:-0.10.4}"
 CHECK_ONLY=0
 
 if [[ "${1:-}" == "--check-only" ]]; then
@@ -12,8 +14,8 @@ fi
 if [[ ! -x "${LUDWIG_BIN}" ]]; then
   echo "[ludwig] Ludwig is not installed in the isolated Ludwig environment (${LUDWIG_VENV})."
   echo "[ludwig] Create a separate Ludwig env so the main lab lockfile stays stable:"
-  echo "  uv venv ${LUDWIG_VENV} --python 3.11"
-  echo "  uv pip install --python ${LUDWIG_VENV}/bin/python 'ludwig==0.7.5'"
+  echo "  uv venv ${LUDWIG_VENV} --python ${LUDWIG_PYTHON_VERSION}"
+  echo "  uv pip install --python ${LUDWIG_VENV}/bin/python 'ludwig==${LUDWIG_EXPECTED_VERSION}'"
   if [[ ${CHECK_ONLY} -eq 1 ]]; then
     echo "[ludwig] Check-only mode: skipping because isolated Ludwig env is not installed."
   fi
@@ -26,8 +28,8 @@ echo "[ludwig] Config: ludwig/prompting.yaml"
 version_output="$("${LUDWIG_BIN}" --version 2>&1 || true)"
 if [[ -n "${version_output}" ]]; then
   echo "[ludwig] Detected version: ${version_output}"
-  if [[ "${version_output}" != *"0.7.5"* ]]; then
-    echo "[ludwig] Warning: this helper is documented/tested against Ludwig 0.7.5." >&2
+  if [[ -n "${LUDWIG_EXPECTED_VERSION}" && "${version_output}" != *"${LUDWIG_EXPECTED_VERSION}"* ]]; then
+    echo "[ludwig] Warning: this helper is configured for Ludwig ${LUDWIG_EXPECTED_VERSION}." >&2
   fi
 fi
 

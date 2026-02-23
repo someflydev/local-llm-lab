@@ -99,14 +99,16 @@ Open:
 ## Ludwig Workflows (Optional)
 
 Ludwig support is kept in a separate virtual environment because it may pull heavy dependencies and churn the main lab lockfile.
-Use Python 3.11 for the isolated Ludwig venv (`ludwig==0.7.5` pulls dependencies that do not build cleanly on Python 3.12).
+Default helper target: `ludwig==0.10.4` on Python 3.12.
 
 Install:
 
 ```bash
-uv venv .venv-ludwig --python 3.11
-uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
+uv venv .venv-ludwig --python 3.12
+uv pip install --python .venv-ludwig/bin/python "ludwig==0.10.4"
 ```
+
+If you intentionally use legacy `ludwig==0.7.5`, prefer Python 3.11 because its dependency chain may fail to build on Python 3.12 (`scikit-learn==1.1.3` + `distutils` removal).
 
 Run the small prompting workflow helper:
 
