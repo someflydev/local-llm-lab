@@ -4,6 +4,7 @@ Use this lightweight checklist before tagging or sharing a release of `local-llm
 
 ## Pre-Release
 
+- Run `./scripts/release_prep.sh --check` (or `--check --allow-dirty` during prompt execution before commit)
 - Confirm working tree status and review intended changes (`git status`, `git diff`)
 - Run `ruff check .`
 - Run `.venv/bin/python -m unittest discover -s tests`

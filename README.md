@@ -8,6 +8,10 @@ A local, Ollama-based experimentation lab for chat, retrieval-augmented generati
 - Built around Ollama, `uv`, `ruff`, and a single `lab` CLI
 - Designed for iterative testing on constrained hardware (for example, M3 Pro with 18GB unified memory)
 
+Contributing and release hygiene:
+- See `CONTRIBUTING.md` for setup, test commands, and prompt-change workflow
+- Run `./scripts/release_prep.sh --check` before tagging/sharing
+
 ## Quickstart
 
 ```bash

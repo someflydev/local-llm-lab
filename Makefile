@@ -3,7 +3,7 @@
 PYTHON_VERSION ?= 3.12
 RUNS_DIR ?= runs
 
-.PHONY: help bootstrap check verify smoke-fixture clean-runs-preview clean-runs
+.PHONY: help bootstrap check verify smoke-fixture clean-runs-preview clean-runs release-check
 
 help: ## Show available targets
 	@awk 'BEGIN {FS = ": .*## "}; /^[a-zA-Z0-9_.-]+: .*## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -60,3 +60,7 @@ clean-runs: ## Delete contents under RUNS_DIR (guarded; requires CONFIRM=1)
 	find "$$runs_dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +; \
 	echo "[clean-runs] Done"
 
+release-check: ## Run release prep checks (set ALLOW_DIRTY=1 while iterating)
+	@dirty_flag=""; \
+	if [ "$${ALLOW_DIRTY:-0}" = "1" ]; then dirty_flag="--allow-dirty"; fi; \
+	./scripts/release_prep.sh --check $$dirty_flag

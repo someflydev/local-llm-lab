@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient
 
 from lab.ingest import ingest_corpus
 from lab.retrieval import retrieve
-from lab.runner import RAG_REFUSAL, _call_rag_with_controls, run_config
+from lab.runner import _call_rag_with_controls, run_config
 from lab.web.app import JOB_STORE, app
 
 
