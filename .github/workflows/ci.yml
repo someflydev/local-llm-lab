@@ -30,11 +30,14 @@ jobs:
         env:
           LUDWIG_PYTHON_VERSION: "3.12"
           LUDWIG_EXPECTED_VERSION: "0.10.4"
+          LUDWIG_RUNTIME_NUMPY_SPEC: "numpy<2"
           LUDWIG_BUILD_CYTHON_SPEC: "Cython<3"
         run: |
           uv venv .venv-ludwig --python "${LUDWIG_PYTHON_VERSION}"
+          printf '%s\n' "${LUDWIG_RUNTIME_NUMPY_SPEC}" > /tmp/ludwig-runtime-constraints.txt
           printf '%s\n' "${LUDWIG_BUILD_CYTHON_SPEC}" > /tmp/ludwig-build-constraints.txt
           uv pip install --python .venv-ludwig/bin/python \
+            --constraints /tmp/ludwig-runtime-constraints.txt \
             --build-constraints /tmp/ludwig-build-constraints.txt \
             "ludwig==${LUDWIG_EXPECTED_VERSION}"
           ./scripts/run_ludwig_prompting.sh --check-only

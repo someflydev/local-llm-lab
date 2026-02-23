@@ -105,12 +105,15 @@ Install:
 
 ```bash
 uv venv .venv-ludwig --python 3.12
+printf 'numpy<2\n' > /tmp/ludwig-runtime-constraints.txt
 printf 'Cython<3\n' > /tmp/ludwig-build-constraints.txt
 uv pip install --python .venv-ludwig/bin/python \
+  --constraints /tmp/ludwig-runtime-constraints.txt \
   --build-constraints /tmp/ludwig-build-constraints.txt \
   "ludwig==0.10.4"
 ```
 
+The runtime constraint avoids NumPy 2.x ABI mismatches with older Ludwig-transitive binary wheels (for example `pyarrow`).
 The build constraint avoids a Python 3.12 source-build failure for `pyyaml==6.0`
 in Ludwig's dependency set by forcing a PyYAML-compatible Cython version (`Cython<3`).
 
