@@ -32,7 +32,7 @@ jobs:
           LUDWIG_EXPECTED_VERSION: "0.10.4"
           LUDWIG_RUNTIME_NUMPY_SPEC: "numpy<2"
           LUDWIG_RUNTIME_TORCH_SPEC: "torch==2.3.*"
-          LUDWIG_RUNTIME_SETUPTOOLS_SPEC: "setuptools"
+          LUDWIG_RUNTIME_SETUPTOOLS_SPEC: "setuptools<81"
           LUDWIG_BUILD_CYTHON_SPEC: "Cython<3"
         run: |
           uv venv .venv-ludwig --python "${LUDWIG_PYTHON_VERSION}"
