@@ -1,0 +1,16 @@
+---
+Timestamp: 2026-02-22T21:02:01-0600 CST
+Summary: Post-flight audit comparing `.prompts/` intent to the as-built repository, including inventory, traceability, completeness scoring, excellence rating, complexity audit, naming/consistency review, and frontend packaging directions.
+Top 10 issues found:
+- PF-A01 (P1): No automated tests or CI despite broad CLI/RAG/web surface area.
+- PF-A02 (P1): `scripts/bootstrap_mac.sh` uses `uv sync` instead of `uv sync --locked`, conflicting with operator docs.
+- PF-A03 (P1): Python interpreter reproducibility not enforced (`>=3.12` only; bootstrap does not force 3.12).
+- PF-A04 (P1): Optional Ludwig extra bloats shared `uv.lock` and changes core dependency resolution.
+- PF-A05 (P1): Hidden RAG refusal heuristic (`top_score < 0.35`) can override model output and skew evals.
+- PF-A06 (P2): Eval runner provides no progress output and weak long-run operability signals.
+- PF-A07 (P2): RAG citation text is mutated heuristically instead of clean structured rendering.
+- PF-A08 (P2): Web handlers run local inference synchronously and suppress some recommendation errors.
+- PF-A09 (P3): Run detail page reads full `results.jsonl` before slicing first 100 rows.
+- PF-A10 (P3): Two operator guides (`OPERATORS_GUIDE.md` and `docs/operators_guide.md`) create audience/scope confusion.
+Fixes applied during this run:
+- None (audit/report generation only).
