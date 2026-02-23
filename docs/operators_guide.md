@@ -106,12 +106,14 @@ printf 'Cython<3\n' > /tmp/ludwig-build-constraints.txt
 uv pip install --python .venv-ludwig/bin/python \
   --constraints /tmp/ludwig-runtime-constraints.txt \
   --build-constraints /tmp/ludwig-build-constraints.txt \
-  "ludwig==0.10.4"
+  "ludwig==0.10.4" \
+  "setuptools"
 ./scripts/run_ludwig_prompting.sh
 ```
 
 The runtime constraint avoids NumPy 2.x ABI mismatches with older Ludwig-transitive binary wheels.
 Pinning `torch==2.3.*` keeps the environment compatible with the `torchtext` version Ludwig resolves.
+Installing `setuptools` ensures `pkg_resources` is available for older Ludwig-transitive packages.
 The build constraint avoids the `pyyaml==6.0` build issue on Python 3.12 by forcing `Cython<3`.
 
 If you intentionally install legacy `ludwig==0.7.5`, use Python 3.11 for that isolated venv.

@@ -32,6 +32,7 @@ jobs:
           LUDWIG_EXPECTED_VERSION: "0.10.4"
           LUDWIG_RUNTIME_NUMPY_SPEC: "numpy<2"
           LUDWIG_RUNTIME_TORCH_SPEC: "torch==2.3.*"
+          LUDWIG_RUNTIME_SETUPTOOLS_SPEC: "setuptools"
           LUDWIG_BUILD_CYTHON_SPEC: "Cython<3"
         run: |
           uv venv .venv-ludwig --python "${LUDWIG_PYTHON_VERSION}"
@@ -43,5 +44,6 @@ jobs:
           uv pip install --python .venv-ludwig/bin/python \
             --constraints /tmp/ludwig-runtime-constraints.txt \
             --build-constraints /tmp/ludwig-build-constraints.txt \
-            "ludwig==${LUDWIG_EXPECTED_VERSION}"
+            "ludwig==${LUDWIG_EXPECTED_VERSION}" \
+            "${LUDWIG_RUNTIME_SETUPTOOLS_SPEC}"
           ./scripts/run_ludwig_prompting.sh --check-only
