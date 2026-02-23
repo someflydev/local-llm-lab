@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import os
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -10,7 +11,7 @@ from unittest.mock import patch
 import orjson
 from fastapi.testclient import TestClient
 
-from lab.web.app import app
+from lab.web.app import JOB_STORE, app
 
 
 @contextlib.contextmanager
@@ -24,6 +25,9 @@ def _cwd(path: Path):
 
 
 class WebSmokeTests(unittest.TestCase):
+    def setUp(self) -> None:
+        JOB_STORE.clear()
+
     def test_runs_pages_smoke_and_preview_truncation(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
@@ -61,6 +65,12 @@ class WebSmokeTests(unittest.TestCase):
                 resp_detail = client.get("/runs/20260223T000000Z_test")
                 self.assertEqual(resp_detail.status_code, 200)
                 self.assertIn("Preview limited to first 100 rows", resp_detail.text)
+                self.assertIn("Next page", resp_detail.text)
+
+                resp_detail_page2 = client.get("/runs/20260223T000000Z_test?offset=100&limit=50")
+                self.assertEqual(resp_detail_page2.status_code, 200)
+                self.assertIn("Previous page", resp_detail_page2.text)
+                self.assertIn("Offset: 100 | Limit: 50", resp_detail_page2.text)
 
     @patch("lab.web.app.answer_question")
     @patch("lab.web.app.OllamaClient")
@@ -114,6 +124,35 @@ class WebSmokeTests(unittest.TestCase):
                 self.assertEqual(resp_rag.status_code, 200)
                 self.assertIn("RAG answer", resp_rag.text)
                 self.assertIn("data/corpus/rag.md", resp_rag.text)
+
+                resp_job = client.post(
+                    "/api/jobs/rag",
+                    json={
+                        "question": "What is RAG?",
+                        "index_dir": "runs/index",
+                        "k": 3,
+                        "temperature": 0.2,
+                        "num_ctx": 1024,
+                    },
+                )
+                self.assertEqual(resp_job.status_code, 200)
+                job_payload = resp_job.json()
+                self.assertIn("job_id", job_payload)
+                job_id = job_payload["job_id"]
+                self.assertIn(job_payload["status"], {"queued", "running", "succeeded"})
+
+                final_payload = None
+                for _ in range(20):
+                    poll = client.get(f"/api/jobs/{job_id}")
+                    self.assertEqual(poll.status_code, 200)
+                    final_payload = poll.json()
+                    if final_payload["status"] in {"succeeded", "failed"}:
+                        break
+                    time.sleep(0.01)
+                assert final_payload is not None
+                self.assertEqual(final_payload["status"], "succeeded")
+                self.assertEqual(final_payload["kind"], "rag")
+                self.assertEqual(final_payload["result"]["answer_text"], "RAG answer")
 
 
 if __name__ == "__main__":

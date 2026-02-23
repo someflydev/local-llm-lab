@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import concurrent.futures
 import math
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -29,6 +31,9 @@ class RagEvalConfig:
     overlap_chars: int
     dataset_path: str
     refusal_score_threshold: float | None = None
+    per_call_timeout_s: float | None = None
+    max_retries: int = 0
+    retry_backoff_s: float = 0.0
 
 
 def _load_config(path: str | Path) -> RagEvalConfig:
@@ -107,6 +112,79 @@ def _latency_summary(values: list[float]) -> dict[str, float]:
     }
 
 
+def _rag_error_result(message: str) -> dict[str, Any]:
+    return {
+        "answer_text": f"[rag_error] {message}",
+        "citations": [],
+        "retrieved": [],
+        "latency_ms": 0.0,
+        "error": message,
+    }
+
+
+def _call_rag_with_controls(
+    *,
+    question: str,
+    index_dir: str,
+    chat_model_name: str,
+    embed_model_name: str,
+    k: int,
+    temperature: float,
+    num_ctx: int,
+    question_id: str,
+    refusal_score_threshold: float | None,
+    per_call_timeout_s: float | None,
+    max_retries: int,
+    retry_backoff_s: float,
+) -> tuple[dict[str, Any], int]:
+    attempts = max(1, max_retries + 1)
+    last_error: str | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            if per_call_timeout_s is None:
+                result = answer_question(
+                    question=question,
+                    index_dir=index_dir,
+                    chat_model_name=chat_model_name,
+                    embed_model_name=embed_model_name,
+                    k=k,
+                    temperature=temperature,
+                    num_ctx=num_ctx,
+                    question_id=question_id,
+                    refusal_score_threshold=refusal_score_threshold,
+                )
+            else:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    future = pool.submit(
+                        answer_question,
+                        question=question,
+                        index_dir=index_dir,
+                        chat_model_name=chat_model_name,
+                        embed_model_name=embed_model_name,
+                        k=k,
+                        temperature=temperature,
+                        num_ctx=num_ctx,
+                        question_id=question_id,
+                        refusal_score_threshold=refusal_score_threshold,
+                    )
+                    try:
+                        result = future.result(timeout=per_call_timeout_s)
+                    except concurrent.futures.TimeoutError:
+                        future.cancel()
+                        raise TimeoutError(f"RAG call timed out after {per_call_timeout_s}s")
+            return result, attempt
+        except KeyboardInterrupt:
+            raise
+        except Exception as exc:
+            last_error = str(exc)
+            if attempt < attempts:
+                if retry_backoff_s > 0:
+                    time.sleep(retry_backoff_s)
+                continue
+            break
+    return _rag_error_result(last_error or "unknown rag error"), attempts
+
+
 def run_config(path: str | Path) -> Path:
     config_path = Path(path)
     cfg = _load_config(config_path)
@@ -141,68 +219,89 @@ def run_config(path: str | Path) -> Path:
     model_scores: dict[str, list[int]] = {model: [] for model in chat_models}
     model_latencies: dict[str, list[float]] = {model: [] for model in chat_models}
     task_num = 0
+    interrupted = False
+    error_count = 0
+    timeout_count = 0
 
     with results_path.open("ab") as fh:
-        for row in dataset:
-            for model in chat_models:
-                task_num += 1
-                print(
-                    f"[run] {task_num}/{total_tasks} question_id={row['id']} model={model}",
-                    flush=True,
-                )
-                rag_result = answer_question(
-                    question=row["question"],
-                    index_dir=str(run_index_dir),
-                    chat_model_name=model,
-                    embed_model_name=embed_model,
-                    k=cfg.k,
-                    temperature=cfg.temperature,
-                    num_ctx=cfg.num_ctx,
-                    question_id=row["id"],
-                    refusal_score_threshold=cfg.refusal_score_threshold,
-                )
-                answer_text = rag_result["answer_text"]
-                if bool(row["answerable"]):
-                    matched, needed, score = _keyword_score(answer_text, row["expected_keywords"])
-                    score_reason = f"matched_keywords={matched}, needed={needed}"
-                else:
-                    score = 1 if answer_text.strip() == RAG_REFUSAL else 0
-                    matched, needed = 0, 0
-                    score_reason = "exact_refusal" if score == 1 else "missing_exact_refusal"
+        try:
+            for row in dataset:
+                for model in chat_models:
+                    task_num += 1
+                    print(
+                        f"[run] {task_num}/{total_tasks} question_id={row['id']} model={model}",
+                        flush=True,
+                    )
+                    rag_result, attempts_used = _call_rag_with_controls(
+                        question=row["question"],
+                        index_dir=str(run_index_dir),
+                        chat_model_name=model,
+                        embed_model_name=embed_model,
+                        k=cfg.k,
+                        temperature=cfg.temperature,
+                        num_ctx=cfg.num_ctx,
+                        question_id=row["id"],
+                        refusal_score_threshold=cfg.refusal_score_threshold,
+                        per_call_timeout_s=cfg.per_call_timeout_s,
+                        max_retries=cfg.max_retries,
+                        retry_backoff_s=cfg.retry_backoff_s,
+                    )
+                    task_error = rag_result.get("error")
+                    if task_error:
+                        error_count += 1
+                        if "timed out" in str(task_error).lower():
+                            timeout_count += 1
+                        print(
+                            f"[run] warning question_id={row['id']} model={model} error={task_error}",
+                            flush=True,
+                        )
+                    answer_text = rag_result["answer_text"]
+                    if bool(row["answerable"]):
+                        matched, needed, score = _keyword_score(answer_text, row["expected_keywords"])
+                        score_reason = f"matched_keywords={matched}, needed={needed}"
+                    else:
+                        score = 1 if answer_text.strip() == RAG_REFUSAL else 0
+                        matched, needed = 0, 0
+                        score_reason = "exact_refusal" if score == 1 else "missing_exact_refusal"
 
-                record = {
-                    "run_id": run_id,
-                    "config_name": cfg.name,
-                    "question_id": row["id"],
-                    "question": row["question"],
-                    "answerable": row["answerable"],
-                    "model": model,
-                    "embed_model": embed_model,
-                    "k": cfg.k,
-                    "num_ctx": cfg.num_ctx,
-                    "temperature": cfg.temperature,
-                    "answer_text": answer_text,
-                    "citations": rag_result["citations"],
-                    "retrieved": [
-                        {
-                            "path": item["path"],
-                            "chunk_id": item["chunk_id"],
-                            "score": item["score"],
-                        }
-                        for item in rag_result["retrieved"]
-                    ],
-                    "latency_ms": rag_result["latency_ms"],
-                    "expected_keywords": row["expected_keywords"],
-                    "matched_keywords": matched,
-                    "needed_keywords": needed,
-                    "score": score,
-                    "score_reason": score_reason,
-                }
-                fh.write(orjson.dumps(record))
-                fh.write(b"\n")
-                fh.flush()
-                model_scores[model].append(score)
-                model_latencies[model].append(float(rag_result["latency_ms"]))
+                    record = {
+                        "run_id": run_id,
+                        "config_name": cfg.name,
+                        "question_id": row["id"],
+                        "question": row["question"],
+                        "answerable": row["answerable"],
+                        "model": model,
+                        "embed_model": embed_model,
+                        "k": cfg.k,
+                        "num_ctx": cfg.num_ctx,
+                        "temperature": cfg.temperature,
+                        "answer_text": answer_text,
+                        "citations": rag_result["citations"],
+                        "retrieved": [
+                            {
+                                "path": item["path"],
+                                "chunk_id": item["chunk_id"],
+                                "score": item["score"],
+                            }
+                            for item in rag_result["retrieved"]
+                        ],
+                        "latency_ms": rag_result["latency_ms"],
+                        "expected_keywords": row["expected_keywords"],
+                        "matched_keywords": matched,
+                        "needed_keywords": needed,
+                        "score": score,
+                        "score_reason": score_reason,
+                        "error": task_error,
+                        "attempts_used": attempts_used,
+                    }
+                    fh.write(orjson.dumps(record))
+                    fh.write(b"\n")
+                    fh.flush()
+                    model_scores[model].append(score)
+                    model_latencies[model].append(float(rag_result["latency_ms"]))
+        except KeyboardInterrupt:
+            interrupted = True
+            print("[run] Interrupted by user; writing partial summary.", flush=True)
 
     finished_at = datetime.now(UTC)
     aggregate_scores = {
@@ -246,7 +345,15 @@ def run_config(path: str | Path) -> Path:
             "chunk_size_chars": cfg.chunk_size_chars,
             "overlap_chars": cfg.overlap_chars,
             "refusal_score_threshold": cfg.refusal_score_threshold,
+            "per_call_timeout_s": cfg.per_call_timeout_s,
+            "max_retries": cfg.max_retries,
+            "retry_backoff_s": cfg.retry_backoff_s,
         },
+        "interrupted": interrupted,
+        "completed_tasks": task_num,
+        "total_tasks": total_tasks,
+        "error_count": error_count,
+        "timeout_count": timeout_count,
         "heuristic": "Answerable = keyword match (all if <=2 keywords else >=60%); unanswerable = exact refusal string.",
     }
     (run_dir / "summary.json").write_bytes(orjson.dumps(summary, option=orjson.OPT_INDENT_2))

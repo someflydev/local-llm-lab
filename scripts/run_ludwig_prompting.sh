@@ -3,12 +3,20 @@ set -euo pipefail
 
 LUDWIG_VENV=".venv-ludwig"
 LUDWIG_BIN="${LUDWIG_VENV}/bin/ludwig"
+CHECK_ONLY=0
+
+if [[ "${1:-}" == "--check-only" ]]; then
+  CHECK_ONLY=1
+fi
 
 if [[ ! -x "${LUDWIG_BIN}" ]]; then
   echo "[ludwig] Ludwig is not installed in the isolated Ludwig environment (${LUDWIG_VENV})."
   echo "[ludwig] Create a separate Ludwig env so the main lab lockfile stays stable:"
   echo "  uv venv ${LUDWIG_VENV} --python 3.12"
   echo "  uv pip install --python ${LUDWIG_VENV}/bin/python 'ludwig==0.7.5'"
+  if [[ ${CHECK_ONLY} -eq 1 ]]; then
+    echo "[ludwig] Check-only mode: skipping because isolated Ludwig env is not installed."
+  fi
   exit 0
 fi
 
@@ -31,6 +39,11 @@ if [[ "${experiment_help}" != *"--config"* ]]; then
   echo "[ludwig] This Ludwig CLI variant does not advertise '--config' for 'experiment'." >&2
   echo "[ludwig] Verify the command syntax for your version before running." >&2
   exit 1
+fi
+
+if [[ ${CHECK_ONLY} -eq 1 ]]; then
+  echo "[ludwig] Check-only mode: version/syntax validation passed."
+  exit 0
 fi
 
 if "${LUDWIG_BIN}" experiment --config ludwig/prompting.yaml; then

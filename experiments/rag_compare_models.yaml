@@ -11,4 +11,6 @@ temperature: 0.2
 chunk_size_chars: 900
 overlap_chars: 120
 dataset_path: data/rag_eval_questions.jsonl
-
+per_call_timeout_s: null
+max_retries: 0
+retry_backoff_s: 0.0

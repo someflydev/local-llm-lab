@@ -22,6 +22,16 @@
   {% if results_truncated %}
   <p class="meta">Preview limited to first {{ preview_limit }} rows for responsiveness.</p>
   {% endif %}
+  <p class="meta">Offset: {{ offset }} | Limit: {{ preview_limit }}</p>
+  <p class="meta">
+    {% if prev_offset is not none %}
+    <a href="/runs/{{ run_id }}?offset={{ prev_offset }}&limit={{ preview_limit }}">Previous page</a>
+    {% endif %}
+    {% if prev_offset is not none and next_offset is not none %} | {% endif %}
+    {% if next_offset is not none %}
+    <a href="/runs/{{ run_id }}?offset={{ next_offset }}&limit={{ preview_limit }}">Next page</a>
+    {% endif %}
+  </p>
   <table>
     <thead>
       <tr>

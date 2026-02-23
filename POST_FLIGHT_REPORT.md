@@ -142,30 +142,30 @@ Sequencing assumptions observed:
 
 ## 4. Completeness Score (0–100) + Rubric Breakdown
 
-### Overall Completeness Score: **89 / 100**
+### Overall Completeness Score: **94 / 100**
 
-This is a credible, runnable local LLM lab with real core workflows working end-to-end. Recent fixes materially improved reproducibility, operability, maintainability, and packaging readiness (tests, CI, fixture integration smoke tests, locked bootstrap sync, isolated Ludwig environment, explicit RAG heuristic control, runner progress output, web responsiveness fixes, license metadata/file), but a few operability and release-polish gaps still limit confidence.
+This is a credible, runnable local LLM lab with real core workflows working end-to-end. Recent fixes materially improved reproducibility, operability, maintainability, and packaging readiness (tests, CI, fixture integration smoke tests, locked bootstrap sync, isolated Ludwig environment, explicit RAG heuristic control, runner timeout/retry/cancel controls, web background job APIs + polling, pagination, release checklist/changelog, license metadata/file). Remaining gaps are mostly optional live-runtime automation and front-facing proof polish.
 
 ### Rubric Breakdown
 
 | Category | Score | Rationale (evidence) |
 |---|---:|---|
-| A) Core Functionality (0–25) | **22/25** | Core happy paths exist and have produced real outputs: chat/doctor/model policy/RAG/eval/profile/web (`src/lab/cli.py`, `runs/20260223T015121Z_rag_baseline/summary.json`, `runs/profile.jsonl`). Main missing points are reliability of RAG correctness and Ludwig runtime validation. |
+| A) Core Functionality (0–25) | **23/25** | Core happy paths exist and have produced real outputs: chat/doctor/model policy/RAG/eval/profile/web (`src/lab/cli.py`, `runs/20260223T015121Z_rag_baseline/summary.json`, `runs/profile.jsonl`), plus optional background job APIs for chat/RAG and paged run inspection in web UI (`src/lab/web/app.py`). Main missing point is live-Ollama automated validation in CI. |
 | B) Developer Experience (0–20) | **18/20** | Clear `src/` layout, `uv`/`ruff` config, consolidated CLI, bootstrap/verify scripts, and broad docs, now with locked Python 3.12 bootstrap sync (`scripts/bootstrap_mac.sh:30-42`) and `.python-version`. Loses points for long-running command UX and manual Ludwig side-environment setup. |
 | C) Tests + Quality Gates (0–15) | **12/15** | CI now runs lint + `unittest`, and the repo includes unit plus fixture-based integration smoke tests for ingest/retrieve/runner/web routes (`tests/test_integration_basics.py`, `tests/test_web_smoke.py`, `.github/workflows/ci.yml`). Coverage is still not fully end-to-end against live Ollama. |
 | D) Docs + Examples (0–15) | **15/15** | Strong documentation coverage and examples across README, operator guide, models guide, perf notes, glossary, beginner docs, and updated Ludwig isolation guidance (`docs/` + `README.md`). |
-| E) Operability + Safety (0–15) | **14/15** | Good CLI error handling, model fallbacks, JSONL logs, structured run outputs, explicit opt-in RAG refusal threshold telemetry, eval progress/flush output, and improved web error logging + `to_thread` offloading (`src/lab/rag.py:102-128`, `src/lab/runner.py:133-154`, `src/lab/web/app.py:76-82`, `src/lab/web/app.py:89-193`). Loses points for missing timeout/cancellation controls and lack of background-job handling for long web actions. |
-| F) Packaging + Release Readiness (0–10) | **8/10** | Has package metadata, console script, lockfile, `.python-version`, CI, and a tracked license file/metadata (`pyproject.toml`, `LICENSE`, `.github/workflows/ci.yml`), but still lacks release checklist/changelog conventions and a declared distribution/release process. |
+| E) Operability + Safety (0–15) | **15/15** | Good CLI error handling, model fallbacks, JSONL logs, structured run outputs, explicit opt-in RAG refusal threshold telemetry, runner progress/flush plus timeout/retry/cancel controls, and web error logging + `to_thread` offloading + background job polling endpoints + paged run detail (`src/lab/runner.py`, `src/lab/web/app.py`, `src/lab/web/templates/run_detail.html`). |
+| F) Packaging + Release Readiness (0–10) | **9/10** | Has package metadata, console script, lockfile, `.python-version`, CI, tracked license file/metadata, plus `RELEASE_CHECKLIST.md` and `CHANGELOG.md` conventions (`pyproject.toml`, `LICENSE`, `.github/workflows/ci.yml`, `RELEASE_CHECKLIST.md`, `CHANGELOG.md`). Remaining gap is a more explicit release/distribution automation story. |
 
 Single biggest reason the score is not higher:
-- **Operability edge cases and release process polish are now the limiting factors**: the repo has a solid automated baseline, but long-running flows still lack timeout/background-job controls and release conventions are not defined.
+- **Optional live-runtime automation and front-facing proof assets are now the limiting factors**: CI is strong for deterministic tests, but it does not exercise a live Ollama path and the repo still lacks screenshot/GIF proof packaging.
 
 Single most leverage improvement to raise it fastest:
-- **Add timeout/cancellation controls to `lab run` and a background-job mode for longer web actions** to convert current usability into stronger operational reliability.
+- **Add optional gated live-Ollama smoke tests (manual/nightly) and publish proof assets (screenshots/GIFs + CI badge)** to convert current engineering quality into externally verifiable credibility.
 
 ## 5. General Excellence Rating (1–10) + Evidence
 
-### General Excellence Rating: **8 / 10** (solid, credible project with improving polish)
+### General Excellence Rating: **9 / 10** (highly polished, credible project)
 
 Evidence (factual, file-anchored):
 - The repo has a coherent, purposeful architecture that maps cleanly to the prompt plan: policy -> ingest/retrieve -> RAG -> eval -> web -> profiling (`src/lab/*.py`, `experiments/*.yaml`, `src/lab/web/app.py`).
@@ -185,33 +185,31 @@ Evidence (factual, file-anchored):
 - RAG answers no longer mutate `answer_text` to append citations; citations are rendered separately in CLI/UI (`src/lab/rag.py:112-114`, `src/lab/cli.py`, `src/lab/web/templates/rag.html`).
 - The repo now includes fixture-based integration smoke tests for ingest/retrieve/runner summary generation and web routes, and they run in the local `unittest` suite (`tests/test_integration_basics.py`, `tests/test_web_smoke.py`).
 - Packaging metadata now includes a tracked `LICENSE` file and `pyproject.toml` license metadata/classifiers (conservatively marked `UNLICENSED`) (`LICENSE`, `pyproject.toml`).
+- `lab run` now supports YAML-configurable timeout/retry/backoff controls and records interruption/error metadata in run outputs (`src/lab/runner.py:20-37`, `src/lab/runner.py:125-186`, `src/lab/runner.py:341-357`, `experiments/rag_baseline.yaml`, `experiments/rag_compare_models.yaml`).
+- The web app now provides optional background job APIs (`/api/jobs/chat`, `/api/jobs/rag`, `/api/jobs/{job_id}`) and paged run-detail navigation (`src/lab/web/app.py:307-357`, `src/lab/web/templates/run_detail.html:25-34`).
+- Operator-guide naming clarity is improved with a dedicated `PROMPT_EXECUTION_OPERATORS_GUIDE.md` and a compatibility redirect in `OPERATORS_GUIDE.md` (`PROMPT_EXECUTION_OPERATORS_GUIDE.md`, `OPERATORS_GUIDE.md`).
+- Release process conventions now exist in-repo via `RELEASE_CHECKLIST.md` and `CHANGELOG.md`, and CI includes an optional Ludwig helper compatibility check (`RELEASE_CHECKLIST.md`, `CHANGELOG.md`, `.github/workflows/ci.yml:22-23`).
 
 ## 6. Priority Issues (P0–P3) (Prompt ID, Problem, Impact, Suggested Fix)
 
-No confirmed P0, P1, or P2 issues were found in the current filesystem after the applied fixes. The repo is usable and core flows are present.
+No confirmed P0, P1, P2, or P3 issues remain after the applied fixes. The repo is usable, audited, and materially hardened across reproducibility, operability, and packaging.
 
 | Issue ID | Priority | Prompt ID(s) | Problem | Evidence | Impact | Suggested Fix |
 |---|---|---|---|---|---|---|
-| PF-A06 | P3 | `PROMPT_05.txt` | `lab run` now shows progress and flushes results, but still lacks timeout/cancellation/retry controls for long or stalled model calls | `src/lab/runner.py:133-154`, `src/lab/runner.py:201-204` | Long evaluations are more observable now, but a single stalled request can still block the run | Add per-call timeout/retry settings (configurable) and graceful interruption handling |
-| PF-A08 | P3 | `PROMPT_06.txt` | Web UI now logs failures and offloads work with `asyncio.to_thread`, but long-running actions still execute inline with no background job/progress model | `src/lab/web/app.py:89-193` | UI requests can still time out or feel stuck during heavy local inference/eval actions | Add optional background job endpoints + polling for long-running operations |
-| PF-A09 | P3 | `PROMPT_06.txt` | Run detail now streams a preview, but there is still no pagination/filtering for large `results.jsonl` files | `src/lab/web/app.py:46-58`, `src/lab/web/templates/run_detail.html` | Operators can inspect a preview quickly, but deeper run inspection still requires manual file access | Add pagination/filter controls (server-side line windowing) for run detail |
-| PF-A10 | P3 | `PROMPT_08.txt` | Dual operator-guide naming remains potentially confusing even after audience banners were added | `OPERATORS_GUIDE.md:1-4`, `docs/operators_guide.md:1-4` | Banners reduce confusion, but similar filenames still increase onboarding ambiguity | Consider renaming the root guide to `PROMPT_EXECUTION_OPERATORS_GUIDE.md` |
-| PF-A11 | P3 | `PROMPT_07.txt` | Ludwig helper now validates version/syntax locally, but compatibility is still not CI-verified | `scripts/run_ludwig_prompting.sh:18-34`, `docs/ludwig_workflows.md:48-54` | Optional workflow remains version-fragile across environments | Add an optional/stubbed compatibility smoke check in CI or a checked-in tested-version matrix sample |
-| PF-A15 | P3 | `PROMPT_10.txt` | Release process conventions are still undocumented (no changelog or release checklist) | Repo inventory (no `CHANGELOG.md`, no release docs) | Harder to publish repeatable releases despite stronger code quality and packaging metadata | Add a lightweight `RELEASE_CHECKLIST.md` and simple changelog convention |
 
 ## 7. Overengineering / Complexity Risks (Complexity vs Value)
 
 | Complexity hotspot | Risk | Value delivered | Simplification recommendation |
 |---|---|---|---|
-| Ludwig integration remains a separate environment with manual setup (`docs/ludwig_workflows.md`, `scripts/run_ludwig_prompting.sh`) | Med | Preserves optional capability while protecting the core lockfile | Keep isolated env approach; add lightweight CI verification or a maintained compatibility matrix |
+| Ludwig integration remains a separate environment with manual setup (`docs/ludwig_workflows.md`, `scripts/run_ludwig_prompting.sh`) | Med | Preserves optional capability while protecting the core lockfile | Keep isolated env approach; current `--check-only` CI hook is a good floor, add richer compatibility matrix only if operator friction persists |
 | Ludwig optional integration breadth (docs + dataset + configs + script) | Med | Signals ambition and optional extensibility | Keep docs/templates, but postpone deeper automation until demand is proven |
-| Long-running eval calls still lack timeout/cancellation controls (`src/lab/runner.py`) | Med | Simple runner implementation and deterministic loop | Add configurable timeout/retry/cancel handling while preserving current summary schema |
+| Eval runner now includes timeout/retry/cancel controls but remains a single-function orchestration path (`src/lab/runner.py`) | Low | Simple end-to-end execution path with improved operability | Keep current design until new experiment types demand a stronger orchestration layer |
 | CLI centralization in one large file (`src/lab/cli.py`) | Med | Single entrypoint is easy to discover | Keep one entrypoint but split command handlers into modules (e.g., `cli_models.py`, `cli_rag.py`) |
 | Eval runner coupling to live inference + live ingest in a single function (`run_config`) | Med | Simple end-to-end execution path | Extract ingest phase / eval phase and add progress callbacks + timeout config |
-| Web app directly calling inference functions in request handlers | Med | Fastest path to a working UI | Add thin service layer or JSON endpoints; keep templates simple |
+| Web app mixes template routes and background job API logic in one module (`src/lab/web/app.py`) | Med | Fast iteration and simple deployment | Split API/job logic into a small `web/api.py` module if the UI surface expands |
 | Documentation breadth in README + docs (some overlap) | Low | Great onboarding coverage | Reduce duplication and cross-link more (README short, docs deep) |
-| Dual operator guides (root + docs) with similar filenames | Low | One for prompt execution, one for end users | Keep audience banners; optionally rename the root guide for stronger distinction |
-| Run detail preview is streamed but not pageable | Low | Fast initial load for large runs | Add pagination/filtering when run sizes grow |
+| Redirect + renamed operator guide pair (`OPERATORS_GUIDE.md`, `PROMPT_EXECUTION_OPERATORS_GUIDE.md`) | Low | Backward compatibility plus clearer intent | Keep redirect until old references stop appearing, then consider removing it |
+| Background job store is in-memory (`src/lab/web/app.py`) | Low | Minimal local-first async job support without extra services | Keep as-is for single-user local mode; persist jobs only if multi-user/shared scenarios emerge |
 | Live-Ollama/runtime validation is still mostly manual (tests are mocked/fixture-based) | Med | Fast, deterministic CI without local model dependencies | Add optional gated live-smoke tests for local environments and nightly/manual CI jobs |
 
 ## 8. Naming / Structure / Consistency Findings
@@ -221,10 +219,11 @@ Findings (factual) and recommendations (separate):
 - Factual: Directory layout matches the prompt plan well (`src/lab/`, `scripts/`, `data/`, `experiments/`, `ludwig/`, `docs/`).
   - Recommendation: Keep this layout stable and add a `CONTRIBUTING.md` that codifies where new artifacts belong.
 
-- Factual: There are two operator guides with different audiences, and both now include audience banners:
-  - prompt-execution prep guide at `OPERATORS_GUIDE.md:1`
+- Factual: There are now two clearly separated operator-guide entrypoints:
+  - compatibility redirect at `OPERATORS_GUIDE.md:1`
+  - prompt-execution prep guide at `PROMPT_EXECUTION_OPERATORS_GUIDE.md:1`
   - end-user product operator guide at `docs/operators_guide.md:1`
-  - Recommendation: current banners are sufficient for now; rename the root guide later if onboarding confusion persists.
+  - Recommendation: keep the redirect for compatibility; prune it later if all references migrate to `PROMPT_EXECUTION_OPERATORS_GUIDE.md`.
 
 - Factual: The repo contains two prompt directories/namespaces that are easy to confuse:
   - execution prompts: `.prompts/`
@@ -250,13 +249,13 @@ Findings (factual) and recommendations (separate):
 
 | Rank | Next step | Why it matters | Effort |
 |---:|---|---|---|
-| 1 | Add per-call timeout/retry/cancellation controls to `lab run` | Completes the runner operability story beyond progress+flush | S/M |
-| 2 | Add background-job + polling support for long web actions (optional mode) | Prevents UI stalls and improves observability for heavier use | M |
-| 3 | Add `RELEASE_CHECKLIST.md` and a simple changelog convention | Completes release process polish now that license/CI are in place | S |
-| 4 | Add JSON API endpoints for runs/results and web-backed artifact explorer | Enables stronger frontend/productization without scraping templates | M |
-| 5 | Add run-detail pagination/filtering for large `results.jsonl` files | Improves inspection ergonomics at scale | S/M |
-| 6 | Add a Ludwig compatibility smoke check (optional/stubbed) or richer tested-version matrix | Reduces operator friction for the optional path | S/M |
-| 7 | Expand integration tests with additional edge cases (index integrity, malformed rows, web error paths) | Builds confidence without requiring live Ollama | M |
+| 1 | Add optional gated live-Ollama smoke tests (local/manual CI job) | Highest confidence gain for real runtime behavior without destabilizing default CI | M |
+| 2 | Add screenshots/GIF proof points + CI badge to README/front-facing packaging | Improves evaluator confidence and conversion fastest | S |
+| 3 | Add JSON API endpoints for runs/results and artifact browsing (beyond current background job APIs) | Enables stronger frontend/productization without scraping templates | M |
+| 4 | Expand integration tests with additional edge cases (index integrity, malformed rows, web error paths) | Builds confidence without requiring live Ollama | M |
+| 5 | Add background job support for eval runs in the web UI (optional mode) | Extends the new job/polling pattern to the heaviest workflow | M |
+| 6 | Add run-detail filtering (by model/question/score) on top of pagination | Improves inspection ergonomics at scale | S/M |
+| 7 | Add a richer Ludwig compatibility matrix (versions + example outputs) if operators request it | Reduces optional-path troubleshooting time | S/M |
 | 8 | Add `shellcheck` (or shell smoke tests) for bootstrap/verify helper scripts | Prevents script/docs drift regressions | S |
-| 9 | Consider renaming root `OPERATORS_GUIDE.md` if users still confuse it with `docs/operators_guide.md` | Improves onboarding clarity | S |
-| 10 | Add screenshots/GIF proof points + CI badge to README/front-facing packaging | Improves evaluator confidence and conversion | S |
+| 9 | Consider retiring the `OPERATORS_GUIDE.md` redirect after downstream references are updated | Simplifies naming surface once compatibility window closes | S |
+| 10 | Add a small `CONTRIBUTING.md` for repo layout + test expectations | Preserves consistency as the repo grows | S |

@@ -47,6 +47,11 @@ uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
 
 The script checks whether Ludwig is installed in `.venv-ludwig`. If not, it prints the exact `uv` commands to create that isolated environment and exits with a warning instead of failing hard.
 It also checks the detected Ludwig version and validates that `ludwig experiment --help` includes `--config` before running the workflow command.
+You can run only the validation checks (without executing the workflow) using:
+
+```bash
+./scripts/run_ludwig_prompting.sh --check-only
+```
 
 ## Compatibility notes
 

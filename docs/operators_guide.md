@@ -1,7 +1,7 @@
 # Operator's Guide
 
 > Audience: local LLM lab operator (after the repo is built).
-> If you are preparing a Codex prompt-run environment before `PROMPT_00_s.txt`, use the root `OPERATORS_GUIDE.md` instead.
+> If you are preparing a Codex prompt-run environment before `PROMPT_00_s.txt`, use `PROMPT_EXECUTION_OPERATORS_GUIDE.md` instead.
 
 This guide covers the concrete steps to get the local LLM lab running on macOS with Ollama.
 

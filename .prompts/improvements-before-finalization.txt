@@ -114,3 +114,35 @@ Verification run this round:
 - `ruff check .` (success)
 - `.venv/bin/python -m unittest discover -s tests` (success; 8 tests)
 - Note: test run emits a Starlette `TemplateResponse` deprecation warning (non-failing, future cleanup item).
+---
+Timestamp: 2026-02-22T21:39:31-0600 CST
+Summary: Applied remaining P3 fixes: runner timeout/retry/cancel controls, web background job APIs + polling and run-detail pagination, operator-guide naming cleanup via redirect + renamed prompt-execution guide, optional Ludwig compatibility CI hook, release checklist/changelog docs, and final audit refresh to green (no P0–P3 issues).
+Top 10 issues found:
+- No remaining P0/P1/P2/P3 issues after this round.
+- Residual polish opportunity: optional gated live-Ollama smoke tests for CI/local verification.
+- Residual polish opportunity: front-facing screenshots/GIFs + CI badge for README/site packaging.
+- Residual polish opportunity: richer Ludwig compatibility matrix if operators request broader version support.
+- Residual polish opportunity: run-detail filtering (model/question/score) on top of pagination.
+- Residual polish opportunity: background job support for eval runs in the web UI.
+- Residual polish opportunity: additional integration edge-case tests (malformed rows, error paths).
+- Residual polish opportunity: `shellcheck` or shell smoke tests for helper scripts.
+- Residual polish opportunity: retire `OPERATORS_GUIDE.md` redirect after downstream references migrate.
+- Residual polish opportunity: add `CONTRIBUTING.md` for repo layout and test expectations.
+Fixes applied during this run:
+- `src/lab/runner.py` :: added YAML-configurable per-call timeout, retry, and backoff controls; graceful `KeyboardInterrupt` handling; error/timeout/interruption metadata in run summary/results :: resolves PF-A06.
+- `experiments/rag_baseline.yaml` / `experiments/rag_compare_models.yaml` :: documented runner timeout/retry/backoff config knobs with explicit defaults :: exposes new PF-A06 controls in shipped configs.
+- `src/lab/web/app.py` :: added in-memory background job API (`/api/jobs/chat`, `/api/jobs/rag`, `/api/jobs/{job_id}`), run-detail pagination (`offset`/`limit`), and updated TemplateResponse signature to remove Starlette deprecation warning :: resolves PF-A08/PF-A09 and warning cleanup.
+- `src/lab/web/templates/run_detail.html` :: added pagination navigation and offset/limit display :: completes PF-A09 UI support.
+- `tests/test_web_smoke.py` :: added coverage for paginated run-detail view and background-job polling API :: locks in PF-A08/PF-A09 behavior.
+- `scripts/run_ludwig_prompting.sh` :: added `--check-only` mode for version/syntax validation without executing workflow :: enables CI verification path for PF-A11.
+- `.github/workflows/ci.yml` :: added optional Ludwig helper compatibility check step (`--check-only`) :: resolves PF-A11.
+- `docs/ludwig_workflows.md` :: documented `--check-only` validation usage :: aligns docs with PF-A11 fix.
+- `PROMPT_EXECUTION_OPERATORS_GUIDE.md` :: added renamed prompt-execution guide path (copied from original guide) :: resolves PF-A10 naming confusion.
+- `OPERATORS_GUIDE.md` :: replaced with compatibility redirect stub to preserve old references while pointing to renamed guide :: resolves PF-A10 safely.
+- `RELEASE_CHECKLIST.md` + `CHANGELOG.md` :: added release-process documentation baseline :: resolves PF-A15.
+- `docs/operators_guide.md` :: updated cross-reference to new prompt-execution guide path :: keeps operator guidance consistent.
+- `POST_FLIGHT_REPORT.md` / `FRONT_FACING_IDEAS.md` :: refreshed scores, status, and next steps after P3 fixes :: final audit aligned to current repo state.
+Verification run this round:
+- `ruff check .` (success)
+- `.venv/bin/python -m unittest discover -s tests` (success; 8 tests)
+- `./scripts/run_ludwig_prompting.sh --check-only` (success; clean optional skip when `.venv-ludwig` is absent)
