@@ -14,3 +14,47 @@ Top 10 issues found:
 - PF-A10 (P3): Two operator guides (`OPERATORS_GUIDE.md` and `docs/operators_guide.md`) create audience/scope confusion.
 Fixes applied during this run:
 - None (audit/report generation only).
+---
+Timestamp: 2026-02-22T21:11:39-0600 CST
+Summary: Applied P1 post-flight fixes (tests/CI baseline, reproducible bootstrap sync, isolated Ludwig environment workflow, explicit/opt-in RAG refusal threshold telemetry), regenerated `uv.lock`, re-verified, and refreshed audit/front-facing documents.
+Top 10 issues found:
+- PF-A06 (P2): `lab run` eval runner remains long-running and silent (no progress output/flush/timeouts).
+- PF-A07 (P2): RAG citations are still appended heuristically into answer text instead of rendered separately.
+- PF-A08 (P2): Web handlers still run local inference synchronously and can degrade UI responsiveness.
+- PF-A09 (P3): `/runs/{id}` detail page reads full `results.jsonl` before slicing preview rows.
+- PF-A10 (P3): Two operator guides (`OPERATORS_GUIDE.md` vs `docs/operators_guide.md`) can confuse audience/scope.
+- PF-A11 (P3): Ludwig workflow is now isolated and pinned, but runtime compatibility is still not automated.
+- PF-A12 (P3): README quickstart still omits an explicit model-pull branch before `lab chat`.
+- Packaging polish gap: no `LICENSE` file or license metadata in `pyproject.toml`.
+- Quality depth gap: CI/tests exist now, but coverage is unit-only and misses ingest/retrieve/eval/web integration paths.
+- Release readiness gap: no changelog/release checklist conventions documented.
+Fixes applied during this run:
+- `scripts/bootstrap_mac.sh` :: switched to `uv sync --python 3.12 --locked` with failure guidance; run doctor via pinned interpreter :: fixes reproducibility drift and lockfile mismatch risk.
+- `.python-version` :: added `3.12` pin :: improves local interpreter consistency.
+- `pyproject.toml` :: removed Ludwig optional extra from core project deps :: prevents shared lockfile blast radius from optional heavy deps.
+- `uv.lock` :: regenerated after Ludwig extra removal :: shrinks lock to core runtime dependency graph.
+- `scripts/run_ludwig_prompting.sh` :: switched to isolated `.venv-ludwig` binary + pinned install guidance (`ludwig==0.7.5`) :: preserves optional path without mutating core env.
+- `docs/ludwig_workflows.md` :: updated install instructions to isolated Ludwig venv :: aligns docs with lockfile isolation strategy.
+- `docs/operators_guide.md` :: added reproducibility note and isolated Ludwig workflow section :: aligns operator steps with implemented setup.
+- `README.md` :: updated optional Ludwig section to isolated venv instructions :: avoids recommending core-env mutation.
+- `src/lab/rag.py` :: made refusal score threshold opt-in (`refusal_score_threshold=None` default) and added telemetry fields (`top_retrieval_score`, threshold + trigger flag) :: removes hidden behavior.
+- `src/lab/cli.py` :: added `lab rag --refusal-score-threshold` flag and plumbed through to `answer_question` :: exposes heuristic explicitly.
+- `src/lab/runner.py` :: added optional `refusal_score_threshold` config support and summary config emission :: keeps eval behavior configurable and auditable.
+- `tests/test_cli_parser.py` + `tests/test_rag_threshold.py` :: added baseline unit tests (parser + threshold telemetry behavior) :: establishes initial automated coverage.
+- `.github/workflows/ci.yml` :: added GitHub Actions CI (locked sync, Ruff, unittest) :: adds automated quality gate.
+- `POST_FLIGHT_REPORT.md` / `FRONT_FACING_IDEAS.md` :: refreshed scores, issues, and packaging guidance after applied fixes :: keeps audit/docs traceable to current repo state.
+Verification run this round:
+- `uv lock` (success; removed Ludwig-heavy transitive graph from lockfile)
+- `uv sync --python 3.12 --locked` (success)
+- `ruff check .` (success)
+- `.venv/bin/python -m unittest discover -s tests` (success; 3 tests)
+---
+Timestamp: 2026-02-22T21:12:19-0600 CST
+Summary: Follow-up hygiene fix for the P1 reproducibility patch.
+Top 10 issues found:
+- `.python-version` was ignored by `.gitignore`, so the Python pin would not be committed.
+- Remaining priority issues unchanged from prior entry (PF-A06..PF-A12 plus release-polish gaps).
+Fixes applied during this run:
+- `.gitignore` :: removed `.python-version` ignore rule :: ensures the Python 3.12 pin is tracked in the repository.
+Verification run this round:
+- `git status --short .gitignore .python-version` confirms `.gitignore` modified and `.python-version` untracked/ready to add.

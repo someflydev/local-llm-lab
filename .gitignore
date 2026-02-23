@@ -10,11 +10,9 @@ htmlcov/
 # Virtualenvs / local envs
 .venv/
 venv/
-.python-version
 
 # Project runtime artifacts
 runs/
 
 # OS/editor
 .DS_Store
-

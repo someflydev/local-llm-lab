@@ -81,12 +81,13 @@ Open:
 
 ## Ludwig Workflows (Optional)
 
-Ludwig support is provided as an optional extra because it may pull heavy dependencies.
+Ludwig support is kept in a separate virtual environment because it may pull heavy dependencies and churn the main lab lockfile.
 
 Install:
 
 ```bash
-uv sync --extra ludwig
+uv venv .venv-ludwig --python 3.12
+uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
 ```
 
 Run the small prompting workflow helper:
@@ -168,4 +169,3 @@ Full glossary: `docs/glossary.md`
 - run/report works
 - profile works
 - web works (optional)
-

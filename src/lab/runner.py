@@ -28,6 +28,7 @@ class RagEvalConfig:
     chunk_size_chars: int
     overlap_chars: int
     dataset_path: str
+    refusal_score_threshold: float | None = None
 
 
 def _load_config(path: str | Path) -> RagEvalConfig:
@@ -146,6 +147,7 @@ def run_config(path: str | Path) -> Path:
                     temperature=cfg.temperature,
                     num_ctx=cfg.num_ctx,
                     question_id=row["id"],
+                    refusal_score_threshold=cfg.refusal_score_threshold,
                 )
                 answer_text = rag_result["answer_text"]
                 if bool(row["answerable"]):
@@ -230,9 +232,9 @@ def run_config(path: str | Path) -> Path:
             "temperature": cfg.temperature,
             "chunk_size_chars": cfg.chunk_size_chars,
             "overlap_chars": cfg.overlap_chars,
+            "refusal_score_threshold": cfg.refusal_score_threshold,
         },
         "heuristic": "Answerable = keyword match (all if <=2 keywords else >=60%); unanswerable = exact refusal string.",
     }
     (run_dir / "summary.json").write_bytes(orjson.dumps(summary, option=orjson.OPT_INDENT_2))
     return run_dir
-

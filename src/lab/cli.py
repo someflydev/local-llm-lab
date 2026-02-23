@@ -252,6 +252,7 @@ def _cmd_rag(args: argparse.Namespace) -> int:
             temperature=args.temperature,
             num_ctx=args.num_ctx,
             question_id=args.question_id,
+            refusal_score_threshold=args.refusal_score_threshold,
         )
     except Exception as exc:
         console.print(f"[red]RAG failed:[/red] {exc}")
@@ -385,6 +386,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_rag.add_argument("--k", type=int, default=5)
     p_rag.add_argument("--num-ctx", type=int, default=4096, dest="num_ctx")
     p_rag.add_argument("--temperature", type=float, default=0.2)
+    p_rag.add_argument(
+        "--refusal-score-threshold",
+        type=float,
+        default=None,
+        dest="refusal_score_threshold",
+        help="Optional retrieval-score threshold to force exact refusal (disabled by default)",
+    )
     p_rag.set_defaults(func=_cmd_rag)
 
     p_run = subparsers.add_parser("run", help="Run an experiment config")

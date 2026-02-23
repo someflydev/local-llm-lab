@@ -25,9 +25,6 @@ dependencies = [
 [project.scripts]
 lab = "lab.cli:main"
 
-[project.optional-dependencies]
-ludwig = ["ludwig"]
-
 [tool.hatch.build.targets.wheel]
 packages = ["src/lab"]
 

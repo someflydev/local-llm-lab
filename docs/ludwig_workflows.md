@@ -21,13 +21,13 @@ Keep runs small:
 - ICL: provide examples in the prompt/context without changing model weights
 - Fine-tuning: update model parameters (usually heaviest and least laptop-friendly)
 
-## Installation (optional extra)
+## Installation (isolated Ludwig environment)
 
-This project keeps Ludwig in an optional extra because it may pull heavy dependencies.
+Keep Ludwig in a separate virtual environment so the main lab lockfile stays stable.
 
 ```bash
-uv lock
-uv sync --extra ludwig
+uv venv .venv-ludwig --python 3.12
+uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
 ```
 
 ## Artifacts in this repo
@@ -44,5 +44,4 @@ uv sync --extra ludwig
 ./scripts/run_ludwig_prompting.sh
 ```
 
-The script checks whether Ludwig is installed. If not, it prints the exact `uv` command to install the optional extra and exits with a warning instead of failing hard.
-
+The script checks whether Ludwig is installed in `.venv-ludwig`. If not, it prints the exact `uv` commands to create that isolated environment and exits with a warning instead of failing hard.

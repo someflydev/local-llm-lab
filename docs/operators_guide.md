@@ -50,6 +50,8 @@ uv lock
 uv sync --locked
 ```
 
+This repo also includes a `.python-version` pinned to `3.12`, and the bootstrap script uses `uv sync --python 3.12 --locked` for reproducibility.
+
 ## 6) Baseline verification commands
 
 ```bash
@@ -88,3 +90,12 @@ uv run lab web --port 8000
 
 Then open: `http://127.0.0.1:8000`
 
+## 11) Optional Ludwig workflows (isolated environment)
+
+Keep Ludwig in a separate venv so the main lab environment and lockfile remain stable:
+
+```bash
+uv venv .venv-ludwig --python 3.12
+uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
+./scripts/run_ludwig_prompting.sh
+```

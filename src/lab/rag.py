@@ -54,6 +54,7 @@ def answer_question(
     temperature: float,
     num_ctx: int,
     question_id: str | None = None,
+    refusal_score_threshold: float | None = None,
 ) -> dict[str, Any]:
     start = time.perf_counter()
     retrieved = retrieve(query=question, k=k, index_dir=index_dir, embed_model_name=embed_model_name)
@@ -98,10 +99,15 @@ def answer_question(
     )
     answer_text = _response_text(response)
 
-    # Conservative refusal normalization: low-similarity top hit often indicates unsupported queries.
     top_score = retrieved[0]["score"] if retrieved else 0.0
-    if top_score < 0.35 and answer_text != RAG_REFUSAL:
+    threshold_triggered = False
+    if (
+        refusal_score_threshold is not None
+        and top_score < refusal_score_threshold
+        and answer_text != RAG_REFUSAL
+    ):
         answer_text = RAG_REFUSAL
+        threshold_triggered = True
 
     if answer_text == RAG_REFUSAL:
         citations = []
@@ -120,6 +126,9 @@ def answer_question(
         "num_ctx": num_ctx,
         "latency_ms": latency_ms,
         "citations": citations,
+        "top_retrieval_score": round(float(top_score), 4) if retrieved else None,
+        "refusal_score_threshold": refusal_score_threshold,
+        "refusal_threshold_triggered": threshold_triggered,
         "answer_preview": answer_text[:160],
     }
     log_event("rag", payload)
@@ -129,4 +138,3 @@ def answer_question(
         "retrieved": retrieved,
         "latency_ms": latency_ms,
     }
-

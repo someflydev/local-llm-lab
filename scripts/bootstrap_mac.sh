@@ -31,8 +31,12 @@ echo "[bootstrap] Ensuring Python 3.12 via uv (idempotent)..."
 uv python install 3.12
 
 echo "[bootstrap] Syncing project dependencies..."
-uv sync
+if ! uv sync --python 3.12 --locked; then
+  echo "[bootstrap] Locked sync failed."
+  echo "[bootstrap] If you intentionally changed dependencies, run:"
+  echo "  uv lock && uv sync --python 3.12 --locked"
+  exit 1
+fi
 
 echo "[bootstrap] Running doctor..."
-uv run lab doctor
-
+uv run --python 3.12 lab doctor

@@ -54,7 +54,7 @@
 - What NOT to promise yet:
   - “Production-grade RAG accuracy”
   - “Stable Ludwig compatibility across versions”
-  - “Battle-tested CI-backed release process” until tests/CI are added
+  - “Battle-tested release process” until coverage expands beyond the new baseline CI/unit checks
 
 ### B) Enterprise / Platform Version (safety, operability, guarantees)
 - Target audience: platform/devx teams evaluating local experimentation standards
@@ -323,7 +323,7 @@ Use these as front-facing content instead of inventing demo-only assets:
 - Snippet: `lab profile` output (1-run and 5-run examples)
 
 ### README/package improvements
-- Add a “Known limitations” section (tests/CI pending, Ludwig compatibility caveats, local model variability)
+- Add a “Known limitations” section (limited test coverage, Ludwig compatibility caveats, local model variability)
 - Add a “Version support” matrix (Python tested version(s), Ollama version range if known)
 - Add license file and metadata
 - Add a short architecture diagram (CLI -> Ollama / sqlite / JSONL / web)
