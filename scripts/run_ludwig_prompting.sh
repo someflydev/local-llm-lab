@@ -12,7 +12,7 @@ fi
 if [[ ! -x "${LUDWIG_BIN}" ]]; then
   echo "[ludwig] Ludwig is not installed in the isolated Ludwig environment (${LUDWIG_VENV})."
   echo "[ludwig] Create a separate Ludwig env so the main lab lockfile stays stable:"
-  echo "  uv venv ${LUDWIG_VENV} --python 3.12"
+  echo "  uv venv ${LUDWIG_VENV} --python 3.11"
   echo "  uv pip install --python ${LUDWIG_VENV}/bin/python 'ludwig==0.7.5'"
   if [[ ${CHECK_ONLY} -eq 1 ]]; then
     echo "[ludwig] Check-only mode: skipping because isolated Ludwig env is not installed."

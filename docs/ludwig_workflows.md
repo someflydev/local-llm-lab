@@ -25,9 +25,10 @@ Keep runs small:
 
 Keep Ludwig in a separate virtual environment so the main lab lockfile stays stable.
 This helper path is currently documented/tested against Ludwig `0.7.5`.
+Use Python 3.11 for the isolated Ludwig venv (`ludwig==0.7.5` may resolve `scikit-learn==1.1.3`, which is not Python 3.12-friendly).
 
 ```bash
-uv venv .venv-ludwig --python 3.12
+uv venv .venv-ludwig --python 3.11
 uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
 ```
 

@@ -96,9 +96,10 @@ Then open: `http://127.0.0.1:8000`
 ## 11) Optional Ludwig workflows (isolated environment)
 
 Keep Ludwig in a separate venv so the main lab environment and lockfile remain stable:
+Use Python 3.11 for the isolated Ludwig venv when installing `ludwig==0.7.5`.
 
 ```bash
-uv venv .venv-ludwig --python 3.12
+uv venv .venv-ludwig --python 3.11
 uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
 ./scripts/run_ludwig_prompting.sh
 ```

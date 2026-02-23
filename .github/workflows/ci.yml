@@ -25,9 +25,12 @@ jobs:
         run: uv run --python 3.12 python scripts/sync_run_artifact_schemas.py --check
       - name: Tests
         run: uv run --python 3.12 python -m unittest discover -s tests
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
       - name: Ludwig helper compatibility check (optional, best-effort)
         continue-on-error: true
         run: |
-          uv venv .venv-ludwig --python 3.12
+          uv venv .venv-ludwig --python 3.11
           uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
           ./scripts/run_ludwig_prompting.sh --check-only
