@@ -7,8 +7,10 @@ from rich.console import Console
 from rich.table import Table
 
 from lab.doctor import run_doctor
+from lab.ingest import ingest_corpus
 from lab.model_registry import match_installed_to_policy, recommend
 from lab.ollama_client import OllamaClient
+from lab.retrieval import retrieve
 
 
 console = Console()
@@ -95,6 +97,11 @@ def _pick_default_model(client: OllamaClient) -> str | None:
     return models[0] if models else None
 
 
+def _recommended_embeddings_model() -> tuple[str | None, list[str]]:
+    rec = recommend("embeddings")
+    return rec.get("chosen_model"), rec.get("suggested_pulls", [])
+
+
 def _cmd_chat(args: argparse.Namespace) -> int:
     client = OllamaClient()
     model = args.model
@@ -131,6 +138,72 @@ def _cmd_chat(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_ingest(args: argparse.Namespace) -> int:
+    embed_model = args.embed_model
+    if not embed_model:
+        try:
+            embed_model, suggestions = _recommended_embeddings_model()
+        except Exception as exc:
+            console.print(f"[red]Failed to resolve embeddings model recommendation:[/red] {exc}")
+            return 1
+        if not embed_model:
+            console.print("[red]No installed embeddings model matched the policy.[/red]")
+            for name in suggestions:
+                console.print(f"- ollama pull {name}")
+            return 1
+
+    try:
+        metadata = ingest_corpus(
+            corpus_dir=args.corpus,
+            index_dir=args.index,
+            embed_model_name=embed_model,
+            chunk_size_chars=args.chunk_size_chars,
+            overlap_chars=args.overlap_chars,
+        )
+    except Exception as exc:
+        console.print(f"[red]Ingest failed:[/red] {exc}")
+        return 1
+
+    console.print("[bold green]Ingest complete[/bold green]")
+    for key, value in metadata.items():
+        console.print(f"- {key}: {value}")
+    return 0
+
+
+def _cmd_retrieve(args: argparse.Namespace) -> int:
+    embed_model = args.embed_model
+    if not embed_model:
+        try:
+            embed_model, suggestions = _recommended_embeddings_model()
+        except Exception as exc:
+            console.print(f"[red]Failed to resolve embeddings model recommendation:[/red] {exc}")
+            return 1
+        if not embed_model:
+            console.print("[red]No installed embeddings model matched the policy.[/red]")
+            for name in suggestions:
+                console.print(f"- ollama pull {name}")
+            return 1
+
+    try:
+        results = retrieve(
+            query=args.query,
+            k=args.k,
+            index_dir=args.index,
+            embed_model_name=embed_model,
+        )
+    except Exception as exc:
+        console.print(f"[red]Retrieve failed:[/red] {exc}")
+        return 1
+
+    console.print(f"[bold]Top {len(results)} results[/bold] (embed model: {embed_model})")
+    for item in results:
+        console.print(
+            f"- path={item['path']} chunk_id={item['chunk_id']} score={item['score']:.4f}\n"
+            f"  snippet={item['snippet']}"
+        )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lab", description="Local LLM Lab CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -159,6 +232,21 @@ def build_parser() -> argparse.ArgumentParser:
     p_chat.add_argument("--num-ctx", type=int, default=4096, dest="num_ctx")
     p_chat.add_argument("--show-raw", action="store_true", help="Print raw response snippet")
     p_chat.set_defaults(func=_cmd_chat)
+
+    p_ingest = subparsers.add_parser("ingest", help="Build local embeddings index from a corpus")
+    p_ingest.add_argument("--corpus", default="data/corpus", help="Corpus directory")
+    p_ingest.add_argument("--index", default="runs/index", help="Index directory")
+    p_ingest.add_argument("--embed-model", default=None, dest="embed_model", help="Embeddings model name")
+    p_ingest.add_argument("--chunk-size-chars", type=int, default=900, dest="chunk_size_chars")
+    p_ingest.add_argument("--overlap-chars", type=int, default=120, dest="overlap_chars")
+    p_ingest.set_defaults(func=_cmd_ingest)
+
+    p_retrieve = subparsers.add_parser("retrieve", help="Retrieve top-k chunks from local index")
+    p_retrieve.add_argument("--index", default="runs/index", help="Index directory")
+    p_retrieve.add_argument("--query", required=True, help="Query text")
+    p_retrieve.add_argument("--k", type=int, default=5)
+    p_retrieve.add_argument("--embed-model", default=None, dest="embed_model", help="Embeddings model name")
+    p_retrieve.set_defaults(func=_cmd_retrieve)
 
     return parser
 
