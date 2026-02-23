@@ -19,6 +19,9 @@
 {% if summary %}
 <section class="panel">
   <h2>Sample Results (first {{ results|length }})</h2>
+  {% if results_truncated %}
+  <p class="meta">Preview limited to first {{ preview_limit }} rows for responsiveness.</p>
+  {% endif %}
   <table>
     <thead>
       <tr>
@@ -44,4 +47,3 @@
 </section>
 {% endif %}
 {% endblock %}
-

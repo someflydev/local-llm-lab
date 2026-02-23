@@ -130,14 +130,26 @@ def run_config(path: str | Path) -> Path:
         overlap_chars=cfg.overlap_chars,
     )
     dataset = _load_dataset(cfg.dataset_path)
+    total_tasks = len(dataset) * len(chat_models)
+    print(
+        f"[run] Starting run_id={run_id} questions={len(dataset)} models={len(chat_models)} "
+        f"total_tasks={total_tasks}",
+        flush=True,
+    )
 
     results_path = run_dir / "results.jsonl"
     model_scores: dict[str, list[int]] = {model: [] for model in chat_models}
     model_latencies: dict[str, list[float]] = {model: [] for model in chat_models}
+    task_num = 0
 
     with results_path.open("ab") as fh:
         for row in dataset:
             for model in chat_models:
+                task_num += 1
+                print(
+                    f"[run] {task_num}/{total_tasks} question_id={row['id']} model={model}",
+                    flush=True,
+                )
                 rag_result = answer_question(
                     question=row["question"],
                     index_dir=str(run_index_dir),
@@ -188,6 +200,7 @@ def run_config(path: str | Path) -> Path:
                 }
                 fh.write(orjson.dumps(record))
                 fh.write(b"\n")
+                fh.flush()
                 model_scores[model].append(score)
                 model_latencies[model].append(float(rag_result["latency_ms"]))
 
@@ -237,4 +250,5 @@ def run_config(path: str | Path) -> Path:
         "heuristic": "Answerable = keyword match (all if <=2 keywords else >=60%); unanswerable = exact refusal string.",
     }
     (run_dir / "summary.json").write_bytes(orjson.dumps(summary, option=orjson.OPT_INDENT_2))
+    print(f"[run] Finished run_id={run_id}", flush=True)
     return run_dir

@@ -23,6 +23,16 @@
 {% if error %}
 <section class="error">{{ error }}</section>
 {% endif %}
+{% if warnings %}
+<section class="panel">
+  <h2>Warnings</h2>
+  <ul>
+    {% for warning in warnings %}
+    <li class="meta">{{ warning }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
 
 {% if result %}
 <section class="panel">
@@ -32,4 +42,3 @@
 </section>
 {% endif %}
 {% endblock %}
-

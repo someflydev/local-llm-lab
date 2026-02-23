@@ -24,6 +24,7 @@ Keep runs small:
 ## Installation (isolated Ludwig environment)
 
 Keep Ludwig in a separate virtual environment so the main lab lockfile stays stable.
+This helper path is currently documented/tested against Ludwig `0.7.5`.
 
 ```bash
 uv venv .venv-ludwig --python 3.12
@@ -45,3 +46,9 @@ uv pip install --python .venv-ludwig/bin/python "ludwig==0.7.5"
 ```
 
 The script checks whether Ludwig is installed in `.venv-ludwig`. If not, it prints the exact `uv` commands to create that isolated environment and exits with a warning instead of failing hard.
+It also checks the detected Ludwig version and validates that `ludwig experiment --help` includes `--config` before running the workflow command.
+
+## Compatibility notes
+
+- Tested helper target: `ludwig==0.7.5`
+- If you install a different Ludwig version, run `./scripts/run_ludwig_prompting.sh` and read the version/syntax validation output before assuming the command shape is compatible.

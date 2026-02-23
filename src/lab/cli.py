@@ -263,6 +263,11 @@ def _cmd_rag(args: argparse.Namespace) -> int:
     console.print(f"[bold]Latency:[/bold] {result['latency_ms']} ms")
     console.print()
     console.print(result["answer_text"])
+    if result["citations"]:
+        console.print()
+        console.print("[bold]Citations[/bold]")
+        for c in result["citations"]:
+            console.print(f"- {c['path']} (chunk_id={c['chunk_id']})")
     if result["retrieved"]:
         console.print()
         console.print("[bold]Retrieved[/bold]")

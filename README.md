@@ -17,6 +17,13 @@ uv run lab models recommend --task chat
 uv run lab chat --prompt "hello"
 ```
 
+If `lab chat` reports no local model, pull the minimal starter set first:
+
+```bash
+ollama pull llama3
+ollama pull nomic-embed-text
+```
+
 ## RAG Tutorial
 
 Build the retrieval index:

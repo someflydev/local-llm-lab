@@ -15,6 +15,24 @@ fi
 echo "[ludwig] Running Ludwig prompting workflow with local dataset..."
 echo "[ludwig] Config: ludwig/prompting.yaml"
 
+version_output="$("${LUDWIG_BIN}" --version 2>&1 || true)"
+if [[ -n "${version_output}" ]]; then
+  echo "[ludwig] Detected version: ${version_output}"
+  if [[ "${version_output}" != *"0.7.5"* ]]; then
+    echo "[ludwig] Warning: this helper is documented/tested against Ludwig 0.7.5." >&2
+  fi
+fi
+
+if ! experiment_help="$("${LUDWIG_BIN}" experiment --help 2>&1)"; then
+  echo "[ludwig] Failed to inspect 'ludwig experiment --help'. Check your Ludwig install." >&2
+  exit 1
+fi
+if [[ "${experiment_help}" != *"--config"* ]]; then
+  echo "[ludwig] This Ludwig CLI variant does not advertise '--config' for 'experiment'." >&2
+  echo "[ludwig] Verify the command syntax for your version before running." >&2
+  exit 1
+fi
+
 if "${LUDWIG_BIN}" experiment --config ludwig/prompting.yaml; then
   echo "[ludwig] Prompting workflow completed."
 else

@@ -111,11 +111,6 @@ def answer_question(
 
     if answer_text == RAG_REFUSAL:
         citations = []
-    else:
-        # Ensure citations are present in the answer body even if the model omits them.
-        sources_block = "\n".join([f"- {c['path']} (chunk_id={c['chunk_id']})" for c in citations])
-        if sources_block and "chunk_id" not in answer_text:
-            answer_text = f"{answer_text}\n\nCitations:\n{sources_block}"
 
     latency_ms = round((time.perf_counter() - start) * 1000, 2)
     payload = {

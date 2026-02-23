@@ -46,6 +46,7 @@
   - Run `lab run --config experiments/rag_baseline.yaml`
   - Open `/runs` in the web UI
 - Proof points to include:
+  - CI badge (lint + unit tests baseline)
   - Screenshot of `lab doctor`
   - Snippet of `lab models recommend --task chat`
   - Example `runs/<id>/summary.json`
@@ -323,7 +324,7 @@ Use these as front-facing content instead of inventing demo-only assets:
 - Snippet: `lab profile` output (1-run and 5-run examples)
 
 ### README/package improvements
-- Add a “Known limitations” section (limited test coverage, Ludwig compatibility caveats, local model variability)
+- Add a “Known limitations” section (limited integration coverage, Ludwig compatibility caveats, local model variability)
 - Add a “Version support” matrix (Python tested version(s), Ollama version range if known)
 - Add license file and metadata
 - Add a short architecture diagram (CLI -> Ollama / sqlite / JSONL / web)

@@ -58,3 +58,34 @@ Fixes applied during this run:
 - `.gitignore` :: removed `.python-version` ignore rule :: ensures the Python 3.12 pin is tracked in the repository.
 Verification run this round:
 - `git status --short .gitignore .python-version` confirms `.gitignore` modified and `.python-version` untracked/ready to add.
+---
+Timestamp: 2026-02-22T21:24:42-0600 CST
+Summary: Applied requested P2/P3 fixes (runner progress/flush, citation separation, web preview streaming and error handling improvements, operator-guide audience banners, README quickstart model-pull branch, Ludwig helper compatibility validation), then refreshed post-flight docs and scores.
+Top 10 issues found:
+- PF-A13 (P2): Missing `LICENSE` file and license metadata in `pyproject.toml`.
+- PF-A14 (P2): CI/tests are still unit-only; no fixture-based integration coverage for ingest/retrieve/eval/web.
+- PF-A06 (P3): `lab run` now has progress/flush but still lacks timeout/cancellation/retry controls.
+- PF-A08 (P3): Web UI now logs/offloads work, but long-running actions still execute inline (no background jobs/progress polling).
+- PF-A09 (P3): Run detail preview is streamed, but pagination/filtering for large `results.jsonl` is still missing.
+- PF-A10 (P3): Dual operator-guide filenames remain similar even after audience banners.
+- PF-A11 (P3): Ludwig helper validates version/syntax locally, but optional compatibility is not CI-verified.
+- Packaging polish gap: no release checklist/changelog convention.
+- Quality depth gap: no end-to-end fixture smoke tests for core happy paths.
+- Front-facing proof gap: screenshots/GIFs/CI badge not yet added to README/package surface.
+Fixes applied during this run:
+- `src/lab/runner.py` :: added run start/step/finish progress output and per-record `results.jsonl` flush :: improves eval-run observability and partial-result durability (PF-A06 partial).
+- `src/lab/rag.py` :: removed answer-text citation block mutation; citations remain structured only :: fixes mixed output semantics (PF-A07).
+- `src/lab/cli.py` :: renders citations in a dedicated CLI section for `lab rag` :: preserves user-facing citations after structured RAG change (PF-A07).
+- `src/lab/web/app.py` :: added streamed JSONL preview loader, recommendation error logging, warning surfacing, and `asyncio.to_thread` offloading for chat/RAG handlers :: addresses PF-A08/PF-A09.
+- `src/lab/web/templates/chat.html` / `src/lab/web/templates/rag.html` :: added warning panels; kept citations separate in UI :: supports PF-A08/PF-A07.
+- `src/lab/web/templates/run_detail.html` :: added preview-limit note for streamed results display :: clarifies PF-A09 behavior.
+- `tests/test_rag_threshold.py` :: added test asserting `answer_text` is not mutated to append citations :: locks in PF-A07 fix.
+- `README.md` :: quickstart now includes explicit model-pull branch for no-model environments :: fixes PF-A12.
+- `OPERATORS_GUIDE.md` + `docs/operators_guide.md` :: added audience banners pointing to each other :: mitigates PF-A10.
+- `scripts/run_ludwig_prompting.sh` :: added Ludwig version output and `experiment --help` `--config` validation before run :: mitigates PF-A11.
+- `docs/ludwig_workflows.md` :: documented tested version target (`0.7.5`) and helper validation behavior :: mitigates PF-A11.
+- `POST_FLIGHT_REPORT.md` / `FRONT_FACING_IDEAS.md` :: refreshed issue list, scores, and packaging guidance after P2/P3 fixes :: keeps audit aligned to current repo state.
+Verification run this round:
+- `ruff check .` (success)
+- `.venv/bin/python -m unittest discover -s tests` (success; 4 tests)
+- `.venv/bin/python -c 'from lab.web.app import app; print(app.title)'` (success)

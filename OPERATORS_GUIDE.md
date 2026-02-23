@@ -1,5 +1,8 @@
 # Operator’s Guide (do this before starting PROMPT_00_s.txt)
 
+> Audience: prompt-execution operator. This file is for preparing the machine before running the `.prompts/` sequence.
+> If you want to operate the built local LLM lab itself, use `docs/operators_guide.md`.
+
 ## 0) Goals
 
 You want a machine state where a Codex session can immediately:
