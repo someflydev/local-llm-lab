@@ -24,6 +24,12 @@ ollama pull llama3
 ollama pull nomic-embed-text
 ```
 
+Optional live-runtime smoke check (gated, skip-friendly):
+
+```bash
+LAB_LIVE_OLLAMA_SMOKE=1 ./scripts/live_ollama_smoke.sh
+```
+
 ## RAG Tutorial
 
 Build the retrieval index:

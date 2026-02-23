@@ -1,0 +1,24 @@
+name: Live Ollama Smoke (Optional)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * *"
+
+jobs:
+  live-smoke:
+    runs-on: self-hosted
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sync dependencies (locked)
+        run: uv sync --python 3.12 --locked
+      - name: Optional live Ollama smoke
+        env:
+          LAB_LIVE_OLLAMA_SMOKE: "1"
+        run: ./scripts/live_ollama_smoke.sh
+

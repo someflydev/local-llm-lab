@@ -77,3 +77,17 @@ uv python list
 ```
 
 (uv supports installing and switching Python versions.)
+
+## 5) Optional Stage-2 live runtime smoke check (after the repo is built)
+
+This is not required for Stage-1 prompt execution or default CI. It is a gated, optional smoke test that verifies the `lab` CLI against a live Ollama runtime:
+
+```
+LAB_LIVE_OLLAMA_SMOKE=1 ./scripts/live_ollama_smoke.sh
+```
+
+If Ollama is down or no model is installed, the test skips by default. To make missing prerequisites fail the check:
+
+```
+LAB_LIVE_OLLAMA_SMOKE=1 LAB_LIVE_OLLAMA_SMOKE_STRICT=1 ./scripts/live_ollama_smoke.sh
+```
