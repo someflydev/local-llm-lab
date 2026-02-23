@@ -146,3 +146,32 @@ Verification run this round:
 - `ruff check .` (success)
 - `.venv/bin/python -m unittest discover -s tests` (success; 8 tests)
 - `./scripts/run_ludwig_prompting.sh --check-only` (success; clean optional skip when `.venv-ludwig` is absent)
+---
+Timestamp: 2026-02-22T22:54:52-0600 CST
+Summary: Stage-2 post-flight audit completed after executing `PROMPT_11`–`PROMPT_15`; verified DoD-S2 commands/evidence (Makefile deterministic ops, optional live-Ollama smoke path, expanded CI/test gates, contributor/release hygiene automation, run-artifact schemas + validator) and wrote `POST_FLIGHT_REPORT_STAGE2.md`.
+What changed in Stage-2 (audited):
+- Added deterministic operator command layer (`Makefile`) with guarded cleanup and release-check targets.
+- Added optional gated live-Ollama smoke test (`tests/test_live_ollama_smoke.py`) + wrapper script + separate optional workflow (`.github/workflows/live-ollama-smoke.yml`).
+- Expanded CI with shell syntax checks, script smoke tests, and run-artifact schema drift check.
+- Added integration edge-case tests (`tests/test_integration_edge_cases.py`) and script smoke tests (`tests/test_script_smoke.py`).
+- Added contributor workflow guide (`CONTRIBUTING.md`) and executable release hygiene checker (`scripts/release_prep.sh`).
+- Added run-artifact pydantic models, generated schemas, schema sync script, validator script, and fixture run artifacts.
+- Updated release checklist to include schema sync and optional live smoke evidence.
+P0/P1 issues closed (with evidence):
+- No Stage-1 P0/P1 issues were open entering Stage-2 (Stage-1 final report was already green) :: evidence: `POST_FLIGHT_REPORT.md` states no confirmed P0/P1/P2/P3 issues remain (`POST_FLIGHT_REPORT.md:195`).
+- Stage-2 audit found no new P0/P1 issues after DoD-S2 verification :: evidence: `POST_FLIGHT_REPORT_STAGE2.md` DoD table all pass + remaining issues list contains only P2/P3 items.
+New risks introduced (if any):
+- Optional live smoke workflow requires a pre-provisioned `self-hosted` runner with Ollama/model state (`.github/workflows/live-ollama-smoke.yml`); this is intentional but should be documented more explicitly.
+- `release_prep.sh` version parsing uses lightweight `python3` line scans (format-sensitive but low complexity by design).
+- Run-artifact schemas are intentionally permissive (`extra=\"allow\"`) and validate a stable subset only; stronger contracts can be added later if needed.
+Updated scores:
+- Completeness: `98/100` (up from `94/100`)
+- Excellence: `9/10` (unchanged; stronger test/ops/release rigor, but still short of 10 due front-facing proof assets + optional runner provisioning polish)
+Verification run this round:
+- `make help` (success; required targets listed)
+- `make check` (success; `ruff` + `unittest`, no live Ollama required)
+- `uv run --python 3.12 python -m unittest discover -s tests` (success; `23` tests, `1` skipped live smoke)
+- `uv run --python 3.12 python -m unittest tests.test_integration_edge_cases tests.test_script_smoke` (success; `10` tests)
+- `./scripts/release_prep.sh --check` (success on clean tree)
+- `uv run --python 3.12 python scripts/sync_run_artifact_schemas.py --check` (success)
+- `uv run --python 3.12 python scripts/validate_run_artifacts.py --run-dir runs/20260223T015121Z_rag_baseline` (success)
