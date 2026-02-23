@@ -1,0 +1,12 @@
+Question:
+{question}
+
+Retrieved Context:
+{context}
+
+Instructions:
+- Answer using only the retrieved context above.
+- Include citations with path and chunk_id for each key claim.
+- If the context does not support an answer, respond exactly:
+I don't know from the provided documents.
+

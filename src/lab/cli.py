@@ -10,6 +10,7 @@ from lab.doctor import run_doctor
 from lab.ingest import ingest_corpus
 from lab.model_registry import match_installed_to_policy, recommend
 from lab.ollama_client import OllamaClient
+from lab.rag import answer_question
 from lab.retrieval import retrieve
 
 
@@ -99,6 +100,11 @@ def _pick_default_model(client: OllamaClient) -> str | None:
 
 def _recommended_embeddings_model() -> tuple[str | None, list[str]]:
     rec = recommend("embeddings")
+    return rec.get("chosen_model"), rec.get("suggested_pulls", [])
+
+
+def _recommended_task_model(task: str) -> tuple[str | None, list[str]]:
+    rec = recommend(task)  # type: ignore[arg-type]
     return rec.get("chosen_model"), rec.get("suggested_pulls", [])
 
 
@@ -204,6 +210,64 @@ def _cmd_retrieve(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_rag(args: argparse.Namespace) -> int:
+    chat_model = args.model
+    embed_model = args.embed_model
+
+    try:
+        if not chat_model:
+            chat_model, chat_suggestions = _recommended_task_model("rag_qa")
+        else:
+            chat_suggestions = []
+        if not embed_model:
+            embed_model, embed_suggestions = _recommended_embeddings_model()
+        else:
+            embed_suggestions = []
+    except Exception as exc:
+        console.print(f"[red]Failed to resolve model recommendations:[/red] {exc}")
+        return 1
+
+    if not chat_model:
+        console.print("[red]No installed chat/RAG model matched the policy.[/red]")
+        for name in chat_suggestions:
+            console.print(f"- ollama pull {name}")
+        return 1
+    if not embed_model:
+        console.print("[red]No installed embeddings model matched the policy.[/red]")
+        for name in embed_suggestions:
+            console.print(f"- ollama pull {name}")
+        return 1
+
+    try:
+        result = answer_question(
+            question=args.question,
+            index_dir=args.index,
+            chat_model_name=chat_model,
+            embed_model_name=embed_model,
+            k=args.k,
+            temperature=args.temperature,
+            num_ctx=args.num_ctx,
+            question_id=args.question_id,
+        )
+    except Exception as exc:
+        console.print(f"[red]RAG failed:[/red] {exc}")
+        return 1
+
+    console.print(f"[bold]Model:[/bold] {chat_model}")
+    console.print(f"[bold]Embeddings:[/bold] {embed_model}")
+    console.print(f"[bold]Latency:[/bold] {result['latency_ms']} ms")
+    console.print()
+    console.print(result["answer_text"])
+    if result["retrieved"]:
+        console.print()
+        console.print("[bold]Retrieved[/bold]")
+        for item in result["retrieved"]:
+            console.print(
+                f"- path={item['path']} chunk_id={item['chunk_id']} score={item['score']:.4f}"
+            )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lab", description="Local LLM Lab CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -247,6 +311,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_retrieve.add_argument("--k", type=int, default=5)
     p_retrieve.add_argument("--embed-model", default=None, dest="embed_model", help="Embeddings model name")
     p_retrieve.set_defaults(func=_cmd_retrieve)
+
+    p_rag = subparsers.add_parser("rag", help="Answer a question using local retrieval + Ollama")
+    p_rag.add_argument("--index", default="runs/index", help="Index directory")
+    p_rag.add_argument("--question", required=True, help="User question")
+    p_rag.add_argument("--question-id", default=None, dest="question_id", help="Optional dataset id")
+    p_rag.add_argument("--model", default=None, help="Chat model name")
+    p_rag.add_argument("--embed-model", default=None, dest="embed_model", help="Embeddings model name")
+    p_rag.add_argument("--k", type=int, default=5)
+    p_rag.add_argument("--num-ctx", type=int, default=4096, dest="num_ctx")
+    p_rag.add_argument("--temperature", type=float, default=0.2)
+    p_rag.set_defaults(func=_cmd_rag)
 
     return parser
 

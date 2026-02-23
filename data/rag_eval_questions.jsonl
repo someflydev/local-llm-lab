@@ -1,0 +1,21 @@
+{"id":"q001","question":"What does RAG stand for in this lab?","answerable":true,"expected_keywords":["retrieval","augmented","generation"],"notes":"Definition"}
+{"id":"q002","question":"Why can RAG reduce hallucination risk?","answerable":true,"expected_keywords":["retrieved","context"],"notes":"Grounding concept"}
+{"id":"q003","question":"Which directory contains the main package code?","answerable":true,"expected_keywords":["src/lab"],"notes":"Repo layout"}
+{"id":"q004","question":"What command should an operator run first to check the environment?","answerable":true,"expected_keywords":["lab doctor"],"notes":"Operator tip"}
+{"id":"q005","question":"What hardware class is described as a practical sweet spot on an M3 Pro 18GB machine?","answerable":true,"expected_keywords":["8B","8b-class"],"notes":"Model sizing"}
+{"id":"q006","question":"What default num_ctx is suggested before trying larger context windows?","answerable":true,"expected_keywords":["4096"],"notes":"Context default"}
+{"id":"q007","question":"What does the evaluation harness track besides correctness?","answerable":true,"expected_keywords":["latency","refusal"],"notes":"Eval metrics"}
+{"id":"q008","question":"Name one common failure mode addressed by the corpus.","answerable":true,"expected_keywords":["hallucination"],"notes":"Failure modes"}
+{"id":"q009","question":"Why should Ludwig workflows stay small on a laptop?","answerable":true,"expected_keywords":["small datasets","short runs"],"notes":"Hardware practicality"}
+{"id":"q010","question":"What local runtime is used for models in this lab?","answerable":true,"expected_keywords":["Ollama"],"notes":"Core runtime"}
+{"id":"q011","question":"Which exact refusal string should be used when documents are insufficient?","answerable":false,"expected_keywords":[],"notes":"Not in corpus; tests refusal"}
+{"id":"q012","question":"What is the capital city of France?","answerable":false,"expected_keywords":[],"notes":"Outside corpus"}
+{"id":"q013","question":"How many GPU cores are in the M3 Pro in this machine?","answerable":false,"expected_keywords":[],"notes":"Not specified in corpus"}
+{"id":"q014","question":"What version of FastAPI is pinned in pyproject?","answerable":false,"expected_keywords":[],"notes":"Corpus does not mention versions"}
+{"id":"q015","question":"What SQL query does retrieval.py use to load chunks?","answerable":false,"expected_keywords":[],"notes":"Code detail not in corpus"}
+{"id":"q016","question":"Why are smaller settings often better on constrained hardware?","answerable":true,"expected_keywords":["responsiveness"],"notes":"Profiling concepts"}
+{"id":"q017","question":"What should a RAG prompt do if evidence is missing?","answerable":true,"expected_keywords":["refuse","guessing"],"notes":"Refusal behavior"}
+{"id":"q018","question":"What command helps choose defaults for chat, RAG QA, and embeddings?","answerable":true,"expected_keywords":["lab models recommend"],"notes":"Operator tip"}
+{"id":"q019","question":"What can happen if too much text is packed into a prompt?","answerable":true,"expected_keywords":["truncated","memory pressure"],"notes":"Context overflow"}
+{"id":"q020","question":"What external vector database service does this lab require in production?","answerable":false,"expected_keywords":[],"notes":"No external services required, but phrasing not in corpus"}
+
