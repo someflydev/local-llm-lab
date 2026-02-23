@@ -108,7 +108,7 @@ else
   fi
 fi
 
-if uv run --python 3.12 ruff check .; then
+if uv run --python 3.12 --with ruff ruff check .; then
   pass "ruff check"
 else
   fail "ruff check failed"
@@ -127,4 +127,3 @@ fi
 
 echo "[release-prep] Summary: ${failures} check(s) failed"
 exit 1
-

@@ -41,7 +41,7 @@ LAB_LIVE_OLLAMA_SMOKE=1 ./scripts/live_ollama_smoke.sh
 Run the same baseline checks CI uses:
 
 ```bash
-uv run --python 3.12 ruff check .
+uv run --python 3.12 --with ruff ruff check .
 uv run --python 3.12 python -m unittest discover -s tests
 ```
 
@@ -77,4 +77,3 @@ During prompt execution or while iterating on changes (dirty working tree), use:
 ```bash
 ./scripts/release_prep.sh --check --allow-dirty
 ```
-

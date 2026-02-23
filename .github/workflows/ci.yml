@@ -16,7 +16,7 @@ jobs:
       - name: Sync dependencies (locked)
         run: uv sync --python 3.12 --locked
       - name: Lint
-        run: uv run --python 3.12 ruff check .
+        run: uv run --python 3.12 --with ruff ruff check .
       - name: Shell syntax checks
         run: bash -n scripts/*.sh
       - name: Script smoke checks (non-live)

@@ -12,7 +12,7 @@ bootstrap: ## Run local bootstrap checks/setup (may check live Ollama)
 	./scripts/bootstrap_mac.sh
 
 check: ## Deterministic lint + tests (no live Ollama required)
-	uv run --python $(PYTHON_VERSION) ruff check .
+	uv run --python $(PYTHON_VERSION) --with ruff ruff check .
 	uv run --python $(PYTHON_VERSION) python -m unittest discover -s tests
 
 verify: ## Run repo verification script (may use live Ollama if available)
