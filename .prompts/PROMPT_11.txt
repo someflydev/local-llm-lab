@@ -1,0 +1,76 @@
+# PROMPT_11 — Capstone Deterministic Bring-Up / Check / Teardown Wiring
+
+## Objective
+Add a minimal, deterministic operator automation layer that wraps the existing repo commands into a consistent bring-up/check/teardown flow. This prompt should improve repeatability and reduce command drift without changing core architecture or introducing new services. Prefer thin wrappers around existing scripts/CLI/tests.
+
+## Context (Current Repo Reality)
+- The repo already has working scripts: `scripts/bootstrap_mac.sh`, `scripts/verify.sh`, `scripts/run_ludwig_prompting.sh`
+- CI and tests exist and pass (`.github/workflows/ci.yml`, `tests/`)
+- The project uses `uv`, `ruff`, `unittest`, and a single CLI entrypoint `lab`
+- Frontend/product marketing work is explicitly out of scope for Stage-2
+
+## Artifacts To Create / Modify (Exact Paths)
+- `Makefile` (new)
+- `scripts/verify.sh` (modify minimally for clearer modes / exit behavior)
+- `README.md` (optional small update: add a short “deterministic checks” command block if needed)
+- `RELEASE_CHECKLIST.md` (optional small update: reference new `make` targets if added)
+
+## Required Outcomes
+- Add a small `Makefile` with discoverable targets for repeatable local operations.
+- Provide one deterministic bring-up command path (non-live if Ollama unavailable).
+- Provide one deterministic validation command path (lint + tests + fixture/integration smoke).
+- Provide one deterministic teardown/cleanup command path (non-destructive by default).
+- Keep all commands local-first and safe on a developer machine.
+
+## Required `Makefile` Targets (Minimum)
+- `help` (default target; lists targets and brief descriptions)
+- `check` (lint + unit/integration tests already in repo; no live Ollama dependency)
+- `verify` (wraps existing `scripts/verify.sh`; may use live Ollama if available)
+- `smoke-fixture` (deterministic non-live smoke path using existing tests/fixtures)
+- `clean-runs-preview` (shows what would be deleted under `runs/`, no deletion)
+- `clean-runs` (explicit deletion of generated run artifacts only; require confirmation variable such as `CONFIRM=1`)
+
+## Acceptance Criteria (Executable / Verifiable)
+Run and verify all of the following:
+1. `make help`
+   - Expected: lists targets including `check`, `verify`, `smoke-fixture`, `clean-runs-preview`, `clean-runs`
+2. `make check`
+   - Expected: exits 0, runs `ruff` and `unittest` suite without requiring live Ollama
+3. `make smoke-fixture`
+   - Expected: exits 0, runs deterministic smoke coverage (fixture/mocked tests only)
+4. `make clean-runs-preview`
+   - Expected: exits 0, prints candidate run paths without deleting
+5. `make clean-runs`
+   - Expected: refuses unless `CONFIRM=1` is set; with `CONFIRM=1`, deletes only generated subdirectories/files inside `runs/` and preserves tracked docs/scripts/code
+
+## Anti-Scope (Do NOT Do)
+- Do not add Docker, Compose, Taskfile, Justfile, or another orchestration system
+- Do not rewrite core scripts into a Python CLI replacement
+- Do not add remote services, daemon managers, or background supervisors
+- Do not add frontend/web changes
+- Do not delete historical run examples unless the cleanup target is explicitly invoked
+
+## Overengineering Guardrails
+- Keep `Makefile` as a thin command router; no complex shell loops or platform detection logic beyond what already exists
+- Reuse existing scripts and commands instead of duplicating logic
+- Prefer explicit targets over meta-target generators
+- Keep cleanup logic conservative and opt-in (`CONFIRM=1`)
+
+## Risks & Mitigations
+- Risk: `make` target behavior differs across shells
+  - Mitigation: use POSIX-safe shell snippets and keep logic minimal
+- Risk: cleanup target accidentally removes important files
+  - Mitigation: preview target first; `clean-runs` guarded by confirmation flag and restricted path pattern
+- Risk: `verify` fails on machines without models
+  - Mitigation: preserve current graceful-warning behavior in `scripts/verify.sh`
+
+## Evidence To Include In Diff / PR Summary
+- `Makefile` target list (show target names + one-line descriptions)
+- `scripts/verify.sh` diff summary (what changed and why)
+- Output snippets from `make help`, `make check`, and `make clean-runs-preview`
+- Confirmation that `clean-runs` is guarded and path-restricted
+
+## Sequencing Notes
+- Can run independently on the current Stage-1 repo state
+- Improves operator ergonomics for all later Stage-2 prompts
+

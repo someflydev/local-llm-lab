@@ -1,0 +1,67 @@
+# PROMPT_15 — Lightweight Run-Artifact Schemas + Validation Hooks
+
+## Objective
+Introduce lightweight, machine-checkable schemas/specs for key run artifacts (`summary.json`, `results.jsonl` rows) and a validation hook that improves automation confidence without adding heavy dependencies. Use existing `pydantic` where possible and keep the schema scope narrowly focused on artifacts already produced by the repo.
+
+## Context (Why This Is Worth Doing)
+- The repo already writes structured run outputs and uses them in CLI/web/reporting paths
+- The post-flight report recommends light schemas/specs only if they unlock testing/automation
+- This prompt should improve regression detection for run artifact compatibility and future tooling
+
+## Artifacts To Create / Modify (Exact Paths)
+- `src/lab/run_artifact_models.py` (new; pydantic models for run summary + result rows)
+- `schemas/run_summary.schema.json` (new; generated/exported JSON Schema)
+- `schemas/run_result_row.schema.json` (new; generated/exported JSON Schema)
+- `scripts/sync_run_artifact_schemas.py` (new; `--check` and `--write`)
+- `scripts/validate_run_artifacts.py` (new; validates a run dir using pydantic models)
+- `tests/test_run_artifact_schemas.py` (new)
+- `.github/workflows/ci.yml` (modify to run schema sync check and/or artifact-model tests)
+- `RELEASE_CHECKLIST.md` (optional small note to run schema check)
+
+## Required Outcomes
+- Pydantic models encode the minimum stable contract for:
+  - run summary metadata used by reporting/web UI
+  - per-row results fields used by reporting/inspection
+- JSON Schema files are generated from the pydantic models and checked into `schemas/`
+- A sync script supports:
+  - `--write` to regenerate checked-in schemas
+  - `--check` to fail if checked-in schemas drift from model definitions
+- A validation script can validate an existing run directory and report human-readable errors
+
+## Acceptance Criteria (Executable / Verifiable)
+1. `uv run --python 3.12 python scripts/sync_run_artifact_schemas.py --check`
+   - Expected: exits 0 after schemas are generated and in sync
+2. `uv run --python 3.12 python -m unittest tests.test_run_artifact_schemas`
+   - Expected: exits 0 and covers model validation + schema sync behavior
+3. `uv run --python 3.12 python scripts/validate_run_artifacts.py --run-dir runs/20260223T015121Z_rag_baseline`
+   - Expected: exits 0 if sample run dir exists; otherwise prints a clear skip/not-found message and non-fatal usage guidance
+4. `.github/workflows/ci.yml`
+   - Expected: includes schema sync check and/or tests in default CI without adding new external services
+
+## Anti-Scope (Do NOT Do)
+- Do not add `jsonschema` or other new heavy validation libraries unless strictly necessary
+- Do not attempt to schema-ize every internal structure in the repo
+- Do not refactor reporting/web modules heavily to “fit” the schema layer
+- Do not add API/OpenAPI work or frontend schema consumers in this prompt
+
+## Overengineering Guardrails
+- Limit schema scope to run artifacts already used by multiple components
+- Generate JSON Schema from existing pydantic models to avoid duplicate sources of truth
+- Keep validation scripts small and CLI-focused
+
+## Risks & Mitigations
+- Risk: over-constraining evolving run artifacts
+  - Mitigation: encode minimum stable fields first; allow optional extras
+- Risk: schema sync becomes noisy
+  - Mitigation: deterministic key ordering and a simple `--check` diff message
+
+## Evidence To Include In Diff / PR Summary
+- New model file + schema file paths
+- Example `sync_run_artifact_schemas.py --check` output
+- Example validation run output against a sample `runs/<run_id>`
+- CI diff snippet showing schema check integration
+
+## Sequencing Notes
+- Can run independently and provides automation hooks for future tooling
+- Best placed after test/CI and release-hygiene prompts, but does not depend on them
+

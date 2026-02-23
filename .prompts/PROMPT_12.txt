@@ -1,0 +1,74 @@
+# PROMPT_12 — Optional Gated Live-Ollama Smoke Tests (Most-Leverage Improvement)
+
+## Objective
+Add an optional, gated live-runtime smoke test path that exercises a real Ollama-backed happy path without destabilizing deterministic CI. This prompt directly targets the post-flight report’s single most leverage improvement (live-runtime confidence) while keeping default CI fast and reproducible.
+
+## Context (Why This Prompt Exists)
+- `POST_FLIGHT_REPORT.md` identifies optional live-Ollama automation as the biggest remaining credibility gap
+- Current CI is deterministic and non-live (`.github/workflows/ci.yml`) and should remain so by default
+- The repo already has `lab doctor`, `lab models list`, `lab chat`, and `scripts/verify.sh`
+
+## Artifacts To Create / Modify (Exact Paths)
+- `tests/test_live_ollama_smoke.py` (new; env-gated and skip-friendly)
+- `scripts/live_ollama_smoke.sh` (new; operator-friendly wrapper around the gated smoke test)
+- `.github/workflows/live-ollama-smoke.yml` (new; optional manual/nightly workflow, clearly marked non-blocking for default CI)
+- `README.md` (small update: add optional live smoke command)
+- `PROMPT_EXECUTION_OPERATORS_GUIDE.md` (small update: explain prerequisites and gating env vars)
+- `RELEASE_CHECKLIST.md` (small update: include optional live smoke proof step)
+
+## Required Outcomes
+- A live smoke test exists and is skipped unless explicitly enabled
+- The test validates:
+  - Ollama connectivity
+  - at least one usable chat model (prefer `llama3` if present)
+  - one short chat completion via `lab` codepath (not raw curl-only)
+- Default local test runs and default CI remain non-live and stable
+- Optional workflow is clearly separated from the main `CI` workflow
+
+## Gating Rules (Required)
+- Use an explicit env var gate, e.g. `LAB_LIVE_OLLAMA_SMOKE=1`
+- Use short timeouts and minimal prompt payloads
+- If Ollama is unreachable or no model is installed, mark the test as `skipped` (not failed) unless a strict mode is explicitly enabled
+- Keep the workflow manual/nightly or self-hosted-only; do not make it a required PR gate
+
+## Acceptance Criteria (Executable / Verifiable)
+1. `uv run --python 3.12 python -m unittest discover -s tests`
+   - Expected: exits 0 and does **not** run live smoke by default
+2. `./scripts/live_ollama_smoke.sh --help` (or `-h`, if implemented)
+   - Expected: prints usage/gating instructions
+3. `LAB_LIVE_OLLAMA_SMOKE=1 ./scripts/live_ollama_smoke.sh`
+   - Expected on configured machine: exits 0 and prints model + short response summary
+   - Expected on unconfigured machine: exits 0 with a clear skip message (unless strict mode enabled)
+4. `.github/workflows/live-ollama-smoke.yml`
+   - Expected: contains `workflow_dispatch` and/or scheduled trigger, and is documented as optional/non-blocking
+
+## Anti-Scope (Do NOT Do)
+- Do not make live Ollama tests part of the required `CI` workflow
+- Do not add benchmarking, load testing, or performance dashboards
+- Do not add new test frameworks or external services
+- Do not implement frontend/demo screenshot capture in this prompt
+
+## Overengineering Guardrails
+- One smoke test file and one small wrapper script are enough
+- Reuse existing repo primitives (`lab doctor`, `lab models`, `lab chat`, existing client code)
+- Keep workflow YAML simple and clearly optional
+- Prefer `unittest.skip` / graceful skips over custom test runners
+
+## Risks & Mitigations
+- Risk: flaky local runtime / model availability
+  - Mitigation: explicit gating + skip semantics + short timeouts
+- Risk: accidental CI instability
+  - Mitigation: separate workflow file, not required by default CI
+- Risk: model-name variance across machines
+  - Mitigation: prefer `llama3*` if present, otherwise first available chat-capable model
+
+## Evidence To Include In Diff / PR Summary
+- `tests/test_live_ollama_smoke.py` gating logic snippet
+- `scripts/live_ollama_smoke.sh` usage example
+- `live-ollama-smoke.yml` trigger section showing optional/manual nature
+- One local smoke run transcript (success or skip) with environment notes
+
+## Sequencing Notes
+- Can run independently, but benefits from `PROMPT_11` (`make` targets) for operator ergonomics
+- Directly addresses the report’s single most leverage improvement (backend/runtime portion only)
+

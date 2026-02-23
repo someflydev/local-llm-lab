@@ -1,0 +1,68 @@
+# PROMPT_14 — Contributor Workflow + Release Hygiene Automation (No New Packaging Platform)
+
+## Objective
+Improve contributor clarity and release readiness with a small, local-first workflow layer: contributor expectations, a release-prep check script, and tighter cross-links to existing `CHANGELOG.md` and `RELEASE_CHECKLIST.md`. This should raise excellence without introducing publishing automation or external services.
+
+## Context (Report-Driven Rationale)
+- `POST_FLIGHT_REPORT.md` recommends a `CONTRIBUTING.md` and calls out release/distribution automation as the main packaging gap
+- The repo already has `CHANGELOG.md`, `RELEASE_CHECKLIST.md`, CI, tests, and a version in `pyproject.toml` / `src/lab/__init__.py`
+- We want minimal, enforceable hygiene rather than a full release pipeline
+
+## Artifacts To Create / Modify (Exact Paths)
+- `CONTRIBUTING.md` (new)
+- `scripts/release_prep.sh` (new; local pre-release checks, read-only by default)
+- `RELEASE_CHECKLIST.md` (modify: reference `scripts/release_prep.sh`)
+- `CHANGELOG.md` (optional small template/header consistency updates only)
+- `README.md` (optional small contribution/link section)
+- `Makefile` (optional: add `release-check` target if `PROMPT_11` created a `Makefile`)
+
+## Required Outcomes
+- Contributors have a clear path for:
+  - environment setup
+  - lint/test commands
+  - where code/docs/tests belong
+  - how to add/modify prompts safely
+  - how to run optional live smoke tests (referencing `PROMPT_12` artifacts if present)
+- Release prep script checks (minimum):
+  - clean git working tree (or clearly reports dirty state)
+  - version consistency (`pyproject.toml` vs `src/lab/__init__.py`)
+  - `ruff` and `unittest` pass
+  - required files exist (`LICENSE`, `README.md`, `CHANGELOG.md`, `RELEASE_CHECKLIST.md`)
+
+## Acceptance Criteria (Executable / Verifiable)
+1. `./scripts/release_prep.sh --help` (or no-arg usage text)
+   - Expected: documents checks and exit codes
+2. `./scripts/release_prep.sh --check`
+   - Expected: exits 0 on clean repo, prints a concise checklist/result summary
+3. `rg -n \"^# Contributing|## Development Workflow|## Testing|## Prompt Changes\" CONTRIBUTING.md`
+   - Expected: all required sections present
+4. If `Makefile` exists: `make release-check`
+   - Expected: wraps `scripts/release_prep.sh --check` (optional but preferred)
+
+## Anti-Scope (Do NOT Do)
+- Do not add PyPI/Homebrew publishing automation
+- Do not add semantic-release, release bots, or git tagging automation
+- Do not introduce pre-commit or additional package managers unless already present
+- Do not make release checks destructive (no auto-commits/version bumps)
+
+## Overengineering Guardrails
+- Keep release prep as a simple shell script with clear checks and exit codes
+- Prefer documentation + lightweight validation over automation that mutates files
+- Reuse existing commands (`uv`, `ruff`, `unittest`) and version sources
+
+## Risks & Mitigations
+- Risk: false negatives from strict git cleanliness checks during normal development
+  - Mitigation: `--check` reports clearly; document when to use it
+- Risk: duplicate instructions across README/docs
+  - Mitigation: keep README concise and link to `CONTRIBUTING.md` / operator guides
+
+## Evidence To Include In Diff / PR Summary
+- `CONTRIBUTING.md` section list
+- `scripts/release_prep.sh` check list summary
+- Example `--check` output and exit status
+- Any `Makefile` target wiring added
+
+## Sequencing Notes
+- Can run independently
+- Pairs well with `PROMPT_11` (`Makefile`) and `PROMPT_12` (optional live smoke docs/checks), but should not require them
+

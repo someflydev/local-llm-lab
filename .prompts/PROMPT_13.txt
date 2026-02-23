@@ -1,0 +1,69 @@
+# PROMPT_13 — Integration Edge Cases + Script Health Checks + CI Extensions
+
+## Objective
+Strengthen confidence in non-live behavior by adding high-value edge-case integration tests and lightweight shell/script health checks, then wire them into CI without increasing runtime complexity. Focus on preventing regressions in ingest/retrieve/run/web error-path handling and script drift.
+
+## Context (Current Baseline)
+- Existing tests already cover happy-path fixture integration and web smoke routes
+- CI runs `ruff`, `unittest`, and an optional Ludwig helper compatibility check
+- The post-flight report recommends expanding integration edge cases and adding shell checks as high-value next steps
+
+## Artifacts To Create / Modify (Exact Paths)
+- `tests/test_integration_edge_cases.py` (new)
+- `tests/test_script_smoke.py` (new; may shell out minimally, no live Ollama required)
+- `.github/workflows/ci.yml` (modify to include shell syntax/smoke checks and ensure new tests run)
+- `scripts/verify.sh` (optional small changes only if needed for deterministic non-live smoke assertions)
+- `scripts/bootstrap_mac.sh` (optional small shellcheck/syntax fixes only if findings require)
+- `scripts/run_ludwig_prompting.sh` (optional small shellcheck/syntax fixes only if findings require)
+
+## Required Test Focus (Minimum Coverage)
+- Ingest/retrieve edge cases:
+  - empty corpus or missing markdown files (clear failure/warning behavior)
+  - malformed/empty index path handling
+- Eval runner edge cases:
+  - malformed dataset row (missing keys)
+  - timeout/retry config validation path
+  - partial-result behavior on handled failure
+- Web edge cases (mocked):
+  - invalid pagination params or missing run ID
+  - background job poll for unknown job ID
+- Script health:
+  - `bash -n` syntax checks on `scripts/*.sh`
+  - wrapper scripts print expected usage/help or graceful skips
+
+## Acceptance Criteria (Executable / Verifiable)
+1. `bash -n scripts/*.sh`
+   - Expected: exits 0
+2. `uv run --python 3.12 python -m unittest tests.test_integration_edge_cases tests.test_script_smoke`
+   - Expected: exits 0 and does not require Ollama
+3. `uv run --python 3.12 python -m unittest discover -s tests`
+   - Expected: exits 0 with expanded coverage
+4. `.github/workflows/ci.yml`
+   - Expected: includes explicit shell syntax/smoke step(s) and still keeps live-Ollama tests out of default CI
+
+## Anti-Scope (Do NOT Do)
+- Do not migrate to `pytest` or introduce coverage tooling in this prompt
+- Do not add end-to-end browser tests
+- Do not refactor major modules just to make tests “cleaner”
+- Do not add flaky live-runtime tests here (that belongs to `PROMPT_12`)
+
+## Overengineering Guardrails
+- Add a small number of high-signal tests (focus on regressions most likely to occur)
+- Reuse existing fixtures/mocks/patterns from `tests/test_integration_basics.py` and `tests/test_web_smoke.py`
+- Keep CI additions limited to shell syntax/smoke + existing test command
+
+## Risks & Mitigations
+- Risk: test brittleness due to over-mocking internal details
+  - Mitigation: assert observable outputs/files/errors, not internal call counts unless necessary
+- Risk: shell checks become platform-specific
+  - Mitigation: use `bash -n` and simple output assertions; avoid GNU-only flags
+
+## Evidence To Include In Diff / PR Summary
+- New test file names + short descriptions of covered edge cases
+- CI diff snippet showing shell check step(s)
+- Passing command outputs for `bash -n` and targeted unittest runs
+
+## Sequencing Notes
+- Can run independently on current repo
+- Complements `PROMPT_12` by hardening deterministic paths while keeping live smoke optional
+
