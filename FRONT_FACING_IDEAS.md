@@ -326,7 +326,7 @@ Use these as front-facing content instead of inventing demo-only assets:
 ### README/package improvements
 - Add a “Known limitations” section (limited integration coverage, Ludwig compatibility caveats, local model variability)
 - Add a “Version support” matrix (Python tested version(s), Ollama version range if known)
-- Add license file and metadata
+- Clarify current license status in README/package copy (currently `UNLICENSED`) or switch to an explicit OSS license before public release
 - Add a short architecture diagram (CLI -> Ollama / sqlite / JSONL / web)
 
 ### Front-facing site deploy checklist

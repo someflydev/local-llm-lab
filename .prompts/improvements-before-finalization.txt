@@ -89,3 +89,28 @@ Verification run this round:
 - `ruff check .` (success)
 - `.venv/bin/python -m unittest discover -s tests` (success; 4 tests)
 - `.venv/bin/python -c 'from lab.web.app import app; print(app.title)'` (success)
+---
+Timestamp: 2026-02-22T21:31:21-0600 CST
+Summary: Applied P2 fixes requested by user: added conservative tracked license metadata/file (`UNLICENSED`) and a fixture-based integration smoke test baseline (ingest/retrieve/runner/web), then refreshed audit documents and scores.
+Top 10 issues found:
+- PF-A06 (P3): `lab run` still lacks timeout/cancellation/retry controls for long or stalled model calls.
+- PF-A08 (P3): Web long-running actions still execute inline (no background job/progress polling model).
+- PF-A09 (P3): Run detail preview is streamed but still lacks pagination/filtering.
+- PF-A10 (P3): Dual operator-guide filenames remain similar despite audience banners.
+- PF-A11 (P3): Ludwig helper validates version/syntax locally but is not CI-verified.
+- PF-A15 (P3): No release checklist/changelog convention documented.
+- Live-runtime validation gap: integration tests are fixture/mocked and do not exercise a live Ollama path in CI.
+- Front-facing proof gap: README/site packaging still lacks screenshots/GIFs and a CI badge.
+- Optional Ludwig path still requires manual isolated environment creation (`.venv-ludwig`).
+- Starlette template call signature emits a deprecation warning during tests (future compatibility cleanup).
+Fixes applied during this run:
+- `pyproject.toml` :: added `project.license` metadata (`UNLICENSED`) and license classifiers :: resolves missing packaging metadata (PF-A13).
+- `LICENSE` :: added tracked conservative license file (`UNLICENSED` / all rights reserved) :: resolves missing license artifact (PF-A13) without over-granting permissions.
+- `tests/test_integration_basics.py` :: added fixture-based integration smoke tests for ingest/retrieve and runner summary/results schema using mocks :: addresses PF-A14.
+- `tests/test_web_smoke.py` :: added FastAPI route smoke tests for `/runs`, `/runs/{id}` preview truncation, `/chat`, and `/rag` using mocked backends :: addresses PF-A14.
+- `POST_FLIGHT_REPORT.md` :: refreshed completeness score, issue priorities (P2 cleared), evidence, and next steps after license + integration test fixes.
+- `FRONT_FACING_IDEAS.md` :: updated packaging checklist to reflect current license status and remaining limitations.
+Verification run this round:
+- `ruff check .` (success)
+- `.venv/bin/python -m unittest discover -s tests` (success; 8 tests)
+- Note: test run emits a Starlette `TemplateResponse` deprecation warning (non-failing, future cleanup item).

@@ -40,8 +40,8 @@ Build signals / local runtime requirements:
 - No dedicated demo mode/fixture mode found. Closest equivalents are the bundled corpus/eval datasets and checked-in example `runs/` outputs.
 
 Tests / CI / schemas (inventory check):
-- Tests: `tests/test_cli_parser.py`, `tests/test_rag_threshold.py` (3 `unittest` cases)
-- CI: `.github/workflows/ci.yml` (locked sync + lint + unit tests)
+- Tests: `tests/test_cli_parser.py`, `tests/test_rag_threshold.py`, `tests/test_integration_basics.py`, `tests/test_web_smoke.py` (8 `unittest` cases)
+- CI: `.github/workflows/ci.yml` (locked sync + lint + `unittest discover`)
 - Schemas/specs: no standalone JSON Schema/OpenAPI file artifacts found (FastAPI would generate OpenAPI at runtime, but no exported spec is checked in)
 
 ## 2. Prompt Intent Map (compressed)
@@ -142,9 +142,9 @@ Sequencing assumptions observed:
 
 ## 4. Completeness Score (0–100) + Rubric Breakdown
 
-### Overall Completeness Score: **85 / 100**
+### Overall Completeness Score: **89 / 100**
 
-This is a credible, runnable local LLM lab with real core workflows working end-to-end. Recent fixes materially improved reproducibility, operability, and maintainability (tests, CI, locked bootstrap sync, isolated Ludwig environment, explicit RAG heuristic control, runner progress output, web responsiveness fixes), but integration-test depth and release-polish gaps still limit confidence.
+This is a credible, runnable local LLM lab with real core workflows working end-to-end. Recent fixes materially improved reproducibility, operability, maintainability, and packaging readiness (tests, CI, fixture integration smoke tests, locked bootstrap sync, isolated Ludwig environment, explicit RAG heuristic control, runner progress output, web responsiveness fixes, license metadata/file), but a few operability and release-polish gaps still limit confidence.
 
 ### Rubric Breakdown
 
@@ -152,16 +152,16 @@ This is a credible, runnable local LLM lab with real core workflows working end-
 |---|---:|---|
 | A) Core Functionality (0–25) | **22/25** | Core happy paths exist and have produced real outputs: chat/doctor/model policy/RAG/eval/profile/web (`src/lab/cli.py`, `runs/20260223T015121Z_rag_baseline/summary.json`, `runs/profile.jsonl`). Main missing points are reliability of RAG correctness and Ludwig runtime validation. |
 | B) Developer Experience (0–20) | **18/20** | Clear `src/` layout, `uv`/`ruff` config, consolidated CLI, bootstrap/verify scripts, and broad docs, now with locked Python 3.12 bootstrap sync (`scripts/bootstrap_mac.sh:30-42`) and `.python-version`. Loses points for long-running command UX and manual Ludwig side-environment setup. |
-| C) Tests + Quality Gates (0–15) | **9/15** | Baseline unit tests and CI are present (`tests/test_cli_parser.py`, `tests/test_rag_threshold.py`, `.github/workflows/ci.yml`). Coverage is still shallow and does not verify core ingest/retrieve/eval/web flows end-to-end. |
+| C) Tests + Quality Gates (0–15) | **12/15** | CI now runs lint + `unittest`, and the repo includes unit plus fixture-based integration smoke tests for ingest/retrieve/runner/web routes (`tests/test_integration_basics.py`, `tests/test_web_smoke.py`, `.github/workflows/ci.yml`). Coverage is still not fully end-to-end against live Ollama. |
 | D) Docs + Examples (0–15) | **15/15** | Strong documentation coverage and examples across README, operator guide, models guide, perf notes, glossary, beginner docs, and updated Ludwig isolation guidance (`docs/` + `README.md`). |
 | E) Operability + Safety (0–15) | **14/15** | Good CLI error handling, model fallbacks, JSONL logs, structured run outputs, explicit opt-in RAG refusal threshold telemetry, eval progress/flush output, and improved web error logging + `to_thread` offloading (`src/lab/rag.py:102-128`, `src/lab/runner.py:133-154`, `src/lab/web/app.py:76-82`, `src/lab/web/app.py:89-193`). Loses points for missing timeout/cancellation controls and lack of background-job handling for long web actions. |
-| F) Packaging + Release Readiness (0–10) | **7/10** | Has package metadata, console script, lockfile, `.python-version`, and CI (`pyproject.toml`, `uv.lock`, `.github/workflows/ci.yml`), but lacks license metadata/file and release checklist conventions. |
+| F) Packaging + Release Readiness (0–10) | **8/10** | Has package metadata, console script, lockfile, `.python-version`, CI, and a tracked license file/metadata (`pyproject.toml`, `LICENSE`, `.github/workflows/ci.yml`), but still lacks release checklist/changelog conventions and a declared distribution/release process. |
 
 Single biggest reason the score is not higher:
-- **Integration test depth and release polish are now the limiting factors**: the repo has a solid unit/CI baseline, but core ingest/retrieve/eval/web flows are still mostly validated manually and license/release metadata is incomplete.
+- **Operability edge cases and release process polish are now the limiting factors**: the repo has a solid automated baseline, but long-running flows still lack timeout/background-job controls and release conventions are not defined.
 
 Single most leverage improvement to raise it fastest:
-- **Add fixture-based integration tests for ingest/retrieve/runner plus a non-networked web route smoke test** to convert the current manual confidence into repeatable quality gates.
+- **Add timeout/cancellation controls to `lab run` and a background-job mode for longer web actions** to convert current usability into stronger operational reliability.
 
 ## 5. General Excellence Rating (1–10) + Evidence
 
@@ -183,20 +183,21 @@ Evidence (factual, file-anchored):
 - `lab run` now emits per-question progress and flushes `results.jsonl` incrementally, improving long-run visibility and partial-result safety (`src/lab/runner.py:133-154`, `src/lab/runner.py:201-204`).
 - The web UI now streams run-detail previews, surfaces recommendation warnings, logs request failures, and uses `asyncio.to_thread` for chat/RAG work (`src/lab/web/app.py:46-58`, `src/lab/web/app.py:89-193`).
 - RAG answers no longer mutate `answer_text` to append citations; citations are rendered separately in CLI/UI (`src/lab/rag.py:112-114`, `src/lab/cli.py`, `src/lab/web/templates/rag.html`).
+- The repo now includes fixture-based integration smoke tests for ingest/retrieve/runner summary generation and web routes, and they run in the local `unittest` suite (`tests/test_integration_basics.py`, `tests/test_web_smoke.py`).
+- Packaging metadata now includes a tracked `LICENSE` file and `pyproject.toml` license metadata/classifiers (conservatively marked `UNLICENSED`) (`LICENSE`, `pyproject.toml`).
 
 ## 6. Priority Issues (P0–P3) (Prompt ID, Problem, Impact, Suggested Fix)
 
-No confirmed P0 or P1 issues were found in the current filesystem after the applied fixes. The repo is usable and core flows are present.
+No confirmed P0, P1, or P2 issues were found in the current filesystem after the applied fixes. The repo is usable and core flows are present.
 
 | Issue ID | Priority | Prompt ID(s) | Problem | Evidence | Impact | Suggested Fix |
 |---|---|---|---|---|---|---|
 | PF-A06 | P3 | `PROMPT_05.txt` | `lab run` now shows progress and flushes results, but still lacks timeout/cancellation/retry controls for long or stalled model calls | `src/lab/runner.py:133-154`, `src/lab/runner.py:201-204` | Long evaluations are more observable now, but a single stalled request can still block the run | Add per-call timeout/retry settings (configurable) and graceful interruption handling |
-| PF-A13 | P2 | `PROMPT_00_s.txt`, `PROMPT_10.txt` | No `LICENSE` file and no license metadata in `pyproject.toml` | Repo inventory + `pyproject.toml:5-34` | Blocks clean public distribution/reuse expectations and weakens release readiness | Add a `LICENSE` file and `project.license` / classifiers metadata |
-| PF-A14 | P2 | `PROMPT_00_s.txt`, `PROMPT_03.txt`, `PROMPT_04.txt`, `PROMPT_05.txt`, `PROMPT_06.txt` | CI/tests are present but still limited to unit-level parser/RAG behavior; no fixture-based integration coverage for ingest/retrieve/eval/web routes | `.github/workflows/ci.yml`, `tests/test_cli_parser.py`, `tests/test_rag_threshold.py` | Regressions in core workflows can still slip through despite CI passing | Add small fixture-driven integration tests for ingest/retrieve/runner summary schema and a non-networked FastAPI route smoke suite |
 | PF-A08 | P3 | `PROMPT_06.txt` | Web UI now logs failures and offloads work with `asyncio.to_thread`, but long-running actions still execute inline with no background job/progress model | `src/lab/web/app.py:89-193` | UI requests can still time out or feel stuck during heavy local inference/eval actions | Add optional background job endpoints + polling for long-running operations |
 | PF-A09 | P3 | `PROMPT_06.txt` | Run detail now streams a preview, but there is still no pagination/filtering for large `results.jsonl` files | `src/lab/web/app.py:46-58`, `src/lab/web/templates/run_detail.html` | Operators can inspect a preview quickly, but deeper run inspection still requires manual file access | Add pagination/filter controls (server-side line windowing) for run detail |
 | PF-A10 | P3 | `PROMPT_08.txt` | Dual operator-guide naming remains potentially confusing even after audience banners were added | `OPERATORS_GUIDE.md:1-4`, `docs/operators_guide.md:1-4` | Banners reduce confusion, but similar filenames still increase onboarding ambiguity | Consider renaming the root guide to `PROMPT_EXECUTION_OPERATORS_GUIDE.md` |
 | PF-A11 | P3 | `PROMPT_07.txt` | Ludwig helper now validates version/syntax locally, but compatibility is still not CI-verified | `scripts/run_ludwig_prompting.sh:18-34`, `docs/ludwig_workflows.md:48-54` | Optional workflow remains version-fragile across environments | Add an optional/stubbed compatibility smoke check in CI or a checked-in tested-version matrix sample |
+| PF-A15 | P3 | `PROMPT_10.txt` | Release process conventions are still undocumented (no changelog or release checklist) | Repo inventory (no `CHANGELOG.md`, no release docs) | Harder to publish repeatable releases despite stronger code quality and packaging metadata | Add a lightweight `RELEASE_CHECKLIST.md` and simple changelog convention |
 
 ## 7. Overengineering / Complexity Risks (Complexity vs Value)
 
@@ -211,7 +212,7 @@ No confirmed P0 or P1 issues were found in the current filesystem after the appl
 | Documentation breadth in README + docs (some overlap) | Low | Great onboarding coverage | Reduce duplication and cross-link more (README short, docs deep) |
 | Dual operator guides (root + docs) with similar filenames | Low | One for prompt execution, one for end users | Keep audience banners; optionally rename the root guide for stronger distinction |
 | Run detail preview is streamed but not pageable | Low | Fast initial load for large runs | Add pagination/filtering when run sizes grow |
-| Manual verification still dominates for core runtime flows (tests are unit-only today) | Med | Fast iteration during prompt execution | Add fixture-based integration tests and promote critical checks into CI |
+| Live-Ollama/runtime validation is still mostly manual (tests are mocked/fixture-based) | Med | Fast, deterministic CI without local model dependencies | Add optional gated live-smoke tests for local environments and nightly/manual CI jobs |
 
 ## 8. Naming / Structure / Consistency Findings
 
@@ -236,11 +237,11 @@ Findings (factual) and recommendations (separate):
 - Factual: `scripts/bootstrap_mac.sh` and `docs/operators_guide.md` are aligned on locked sync and Python 3.12 guidance.
   - Recommendation: keep this alignment and add shell-level checks (or `shellcheck`) to prevent drift.
 
-- Factual: `pyproject.toml` lacks license metadata and the repo has no `LICENSE` file (inventory + `pyproject.toml:5-37`).
-  - Recommendation: add license metadata/file before public distribution claims.
+- Factual: The repo now includes a tracked `LICENSE` file and conservative `UNLICENSED` metadata/classifier entries in `pyproject.toml`.
+  - Recommendation: if you intend to open-source the repo later, replace `UNLICENSED` with an explicit license (for example MIT/Apache-2.0) and update metadata consistently.
 
-- Factual: A baseline `tests/` suite and CI workflow are now present (`tests/`, `.github/workflows/ci.yml`), but coverage is shallow.
-  - Recommendation: expand toward fixture-based integration coverage for ingest/retrieve/runner/web routes.
+- Factual: The test suite now includes unit tests plus fixture-based integration smoke tests for ingest/retrieve/runner/web routes, and CI runs them.
+  - Recommendation: next expand coverage toward live-Ollama optional smoke tests (gated) and more edge-case assertions.
 
 - Factual: Optional Ludwig support is now documented as an isolated `.venv-ludwig` workflow and no longer lives in core `pyproject.toml`.
   - Recommendation: keep the isolated workflow and add a version compatibility note/test to reduce operator guesswork.
@@ -249,13 +250,13 @@ Findings (factual) and recommendations (separate):
 
 | Rank | Next step | Why it matters | Effort |
 |---:|---|---|---|
-| 1 | Add fixture-based integration tests for ingest/retrieve/runner and web route smoke checks | Biggest confidence gain beyond the current CI/unit baseline | M |
-| 2 | Add per-call timeout/retry/cancellation controls to `lab run` | Completes the runner operability story beyond progress+flush | S/M |
-| 3 | Add `LICENSE`, packaging metadata polish, and release checklist docs | Raises release readiness and external trust | S |
+| 1 | Add per-call timeout/retry/cancellation controls to `lab run` | Completes the runner operability story beyond progress+flush | S/M |
+| 2 | Add background-job + polling support for long web actions (optional mode) | Prevents UI stalls and improves observability for heavier use | M |
+| 3 | Add `RELEASE_CHECKLIST.md` and a simple changelog convention | Completes release process polish now that license/CI are in place | S |
 | 4 | Add JSON API endpoints for runs/results and web-backed artifact explorer | Enables stronger frontend/productization without scraping templates | M |
-| 5 | Add background-job + polling support for long web actions (optional mode) | Prevents UI stalls and improves observability for heavier use | M |
-| 6 | Add run-detail pagination/filtering for large `results.jsonl` files | Improves inspection ergonomics at scale | S/M |
-| 7 | Add a Ludwig compatibility smoke check (optional/stubbed) or richer tested-version matrix | Reduces operator friction for the optional path | S/M |
+| 5 | Add run-detail pagination/filtering for large `results.jsonl` files | Improves inspection ergonomics at scale | S/M |
+| 6 | Add a Ludwig compatibility smoke check (optional/stubbed) or richer tested-version matrix | Reduces operator friction for the optional path | S/M |
+| 7 | Expand integration tests with additional edge cases (index integrity, malformed rows, web error paths) | Builds confidence without requiring live Ollama | M |
 | 8 | Add `shellcheck` (or shell smoke tests) for bootstrap/verify helper scripts | Prevents script/docs drift regressions | S |
 | 9 | Consider renaming root `OPERATORS_GUIDE.md` if users still confuse it with `docs/operators_guide.md` | Improves onboarding clarity | S |
 | 10 | Add screenshots/GIF proof points + CI badge to README/front-facing packaging | Improves evaluator confidence and conversion | S |

@@ -7,7 +7,13 @@ name = "local-llm-lab"
 version = "0.1.0"
 description = "Local LLM experimentation lab using Ollama"
 readme = "README.md"
+license = { text = "UNLICENSED" }
 requires-python = ">=3.12"
+classifiers = [
+  "License :: Other/Proprietary License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+]
 dependencies = [
   "httpx",
   "rich",
