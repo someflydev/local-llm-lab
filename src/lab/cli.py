@@ -11,7 +11,9 @@ from lab.ingest import ingest_corpus
 from lab.model_registry import match_installed_to_policy, recommend
 from lab.ollama_client import OllamaClient
 from lab.rag import answer_question
+from lab.reporting import compare_runs, print_run_summary
 from lab.retrieval import retrieve
+from lab.runner import run_config
 
 
 console = Console()
@@ -268,6 +270,34 @@ def _cmd_rag(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_run(args: argparse.Namespace) -> int:
+    try:
+        run_dir = run_config(args.config)
+    except Exception as exc:
+        console.print(f"[red]Run failed:[/red] {exc}")
+        return 1
+    console.print(f"[bold green]Run complete:[/bold green] {run_dir}")
+    return 0
+
+
+def _cmd_report(args: argparse.Namespace) -> int:
+    try:
+        print_run_summary(args.run)
+    except Exception as exc:
+        console.print(f"[red]Report failed:[/red] {exc}")
+        return 1
+    return 0
+
+
+def _cmd_compare(args: argparse.Namespace) -> int:
+    try:
+        compare_runs(args.runs)
+    except Exception as exc:
+        console.print(f"[red]Compare failed:[/red] {exc}")
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lab", description="Local LLM Lab CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -322,6 +352,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_rag.add_argument("--num-ctx", type=int, default=4096, dest="num_ctx")
     p_rag.add_argument("--temperature", type=float, default=0.2)
     p_rag.set_defaults(func=_cmd_rag)
+
+    p_run = subparsers.add_parser("run", help="Run an experiment config")
+    p_run.add_argument("--config", required=True, help="Path to experiment config YAML")
+    p_run.set_defaults(func=_cmd_run)
+
+    p_report = subparsers.add_parser("report", help="Print a run summary")
+    p_report.add_argument("--run", required=True, help="Run directory (e.g., runs/<run_id>)")
+    p_report.set_defaults(func=_cmd_report)
+
+    p_compare = subparsers.add_parser("compare", help="Compare two or more runs")
+    p_compare.add_argument("--runs", nargs="+", required=True, help="Run directories")
+    p_compare.set_defaults(func=_cmd_compare)
 
     return parser
 

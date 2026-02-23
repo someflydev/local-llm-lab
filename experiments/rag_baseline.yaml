@@ -1,0 +1,13 @@
+name: rag_baseline
+task: rag_eval
+corpus_dir: data/corpus
+chat_models:
+  - llama3
+embed_model: auto
+k: 3
+num_ctx: 4096
+temperature: 0.2
+chunk_size_chars: 900
+overlap_chars: 120
+dataset_path: data/rag_eval_questions.jsonl
+
