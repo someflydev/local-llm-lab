@@ -5,6 +5,7 @@ import sys
 
 from rich.console import Console
 from rich.table import Table
+import uvicorn
 
 from lab.doctor import run_doctor
 from lab.ingest import ingest_corpus
@@ -298,6 +299,11 @@ def _cmd_compare(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_web(args: argparse.Namespace) -> int:
+    uvicorn.run("lab.web.app:app", host="127.0.0.1", port=args.port, reload=False)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lab", description="Local LLM Lab CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -364,6 +370,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_compare = subparsers.add_parser("compare", help="Compare two or more runs")
     p_compare.add_argument("--runs", nargs="+", required=True, help="Run directories")
     p_compare.set_defaults(func=_cmd_compare)
+
+    p_web = subparsers.add_parser("web", help="Run the local web UI")
+    p_web.add_argument("--port", type=int, default=8000)
+    p_web.set_defaults(func=_cmd_web)
 
     return parser
 

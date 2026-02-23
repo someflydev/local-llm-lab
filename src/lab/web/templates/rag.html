@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}RAG | Local LLM Lab{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>RAG QA</h1>
+  <form method="post">
+    <label for="question">Question</label>
+    <textarea id="question" name="question">{{ question }}</textarea>
+
+    <label for="index_dir">Index directory</label>
+    <input id="index_dir" name="index_dir" value="{{ index_dir }}" />
+
+    <label for="model">Chat model</label>
+    <input id="model" name="model" value="{{ model }}" />
+
+    <label for="embed_model">Embeddings model</label>
+    <input id="embed_model" name="embed_model" value="{{ embed_model }}" />
+
+    <label for="k">Top-k</label>
+    <input id="k" name="k" type="number" value="{{ k }}" />
+
+    <label for="temperature">Temperature</label>
+    <input id="temperature" name="temperature" type="number" step="0.1" value="{{ temperature }}" />
+
+    <label for="num_ctx">num_ctx</label>
+    <input id="num_ctx" name="num_ctx" type="number" value="{{ num_ctx }}" />
+
+    <button type="submit">Ask</button>
+  </form>
+</section>
+
+{% if error %}
+<section class="error">{{ error }}</section>
+{% endif %}
+
+{% if result %}
+<section class="panel">
+  <h2>Answer</h2>
+  <p class="meta">
+    Model: {{ result.model }} | Embeddings: {{ result.embed_model }} | Latency: {{ result.latency_ms }} ms
+  </p>
+  <pre>{{ result.answer_text }}</pre>
+</section>
+
+<section class="panel">
+  <h2>Citations</h2>
+  {% if result.citations %}
+  <ul>
+    {% for c in result.citations %}
+    <li><code>{{ c.path }}</code> (chunk_id={{ c.chunk_id }})</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="meta">No citations (refusal case).</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Retrieved Snippets</h2>
+  {% for item in result.retrieved %}
+  <div style="margin-bottom: 0.75rem;">
+    <div class="meta"><code>{{ item.path }}</code> chunk_id={{ item.chunk_id }} score={{ "%.4f"|format(item.score) }}</div>
+    <pre>{{ item.snippet }}</pre>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Run Detail | Local LLM Lab{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Run Detail</h1>
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% else %}
+  <p class="meta">
+    Run: {{ summary.run_id }} | Config: {{ summary.config_name }} | Models: {{ ", ".join(summary.models) }}
+  </p>
+  <p class="meta">
+    Accuracy: {{ summary.aggregate_scores.overall.accuracy_proxy }} |
+    Avg Latency: {{ summary.latency_stats.overall.avg_ms }} ms
+  </p>
+  {% endif %}
+</section>
+
+{% if summary %}
+<section class="panel">
+  <h2>Sample Results (first {{ results|length }})</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Question ID</th>
+        <th>Model</th>
+        <th>Score</th>
+        <th>Latency</th>
+        <th>Answer Preview</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in results %}
+      <tr>
+        <td>{{ r.question_id }}</td>
+        <td>{{ r.model }}</td>
+        <td>{{ r.score }}</td>
+        <td>{{ r.latency_ms }}</td>
+        <td>{{ r.answer_text[:140] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Local LLM Lab{% endblock %}</title>
+    <style>
+      :root {
+        --bg: #f6f3ee;
+        --panel: #fffdf9;
+        --ink: #1a1714;
+        --muted: #6f655c;
+        --line: #d9d1c8;
+        --accent: #0f6b5f;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #fff7e8, var(--bg) 50%);
+        color: var(--ink);
+      }
+      header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255,255,255,0.7);
+        backdrop-filter: blur(6px);
+        position: sticky;
+        top: 0;
+      }
+      nav a {
+        color: var(--ink);
+        text-decoration: none;
+        margin-right: 1rem;
+        font-weight: 600;
+      }
+      nav a:hover { color: var(--accent); }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.25rem;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      label { display: block; margin: 0.5rem 0 0.25rem; font-weight: 600; }
+      input, textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0.65rem 0.75rem;
+        font: inherit;
+        background: #fff;
+      }
+      textarea { min-height: 130px; resize: vertical; }
+      button {
+        margin-top: 0.75rem;
+        padding: 0.65rem 0.95rem;
+        border-radius: 8px;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      pre {
+        background: #151311;
+        color: #f6f2ec;
+        padding: 0.75rem;
+        border-radius: 10px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+      }
+      .meta { color: var(--muted); font-size: 0.92rem; }
+      .error {
+        border: 1px solid #d36e6e;
+        background: #fff1f1;
+        color: #6f1f1f;
+        border-radius: 10px;
+        padding: 0.75rem;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+      th, td {
+        padding: 0.55rem;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+      code {
+        background: #f1ece6;
+        border-radius: 5px;
+        padding: 0.1rem 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/chat">Chat</a>
+        <a href="/rag">RAG</a>
+        <a href="/runs">Runs</a>
+      </nav>
+    </header>
+    <main>{% block content %}{% endblock %}</main>
+  </body>
+</html>
+

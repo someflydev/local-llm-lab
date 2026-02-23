@@ -14,6 +14,7 @@ dependencies = [
   "pydantic>=2",
   "orjson",
   "pyyaml",
+  "python-multipart",
   "langchain",
   "langchain-ollama",
   "jinja2",
@@ -31,4 +32,3 @@ packages = ["src/lab"]
 line-length = 100
 target-version = "py312"
 src = ["src"]
-

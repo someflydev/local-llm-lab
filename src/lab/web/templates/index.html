@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Local LLM Lab UI{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Local LLM Lab</h1>
+  <p class="meta">Minimal local UI for chat, RAG, and experiment run browsing.</p>
+  <ul>
+    <li><a href="/chat">/chat</a> for one-shot chat with Ollama</li>
+    <li><a href="/rag">/rag</a> for retrieval-grounded QA</li>
+    <li><a href="/runs">/runs</a> to inspect recent experiment summaries</li>
+  </ul>
+</section>
+{% endblock %}
+

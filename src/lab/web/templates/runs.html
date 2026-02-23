@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Runs | Local LLM Lab{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Recent Runs</h1>
+  {% if summaries %}
+  <table>
+    <thead>
+      <tr>
+        <th>Run</th>
+        <th>Config</th>
+        <th>Models</th>
+        <th>Accuracy</th>
+        <th>Avg Latency (ms)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in summaries %}
+      <tr>
+        <td><a href="/runs/{{ s.run_id }}">{{ s.run_id }}</a></td>
+        <td>{{ s.config_name }}</td>
+        <td>{{ ", ".join(s.models) }}</td>
+        <td>{{ s.aggregate_scores.overall.accuracy_proxy }}</td>
+        <td>{{ s.latency_stats.overall.avg_ms }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="meta">No run summaries found yet.</p>
+  {% endif %}
+</section>
+{% endblock %}
+
