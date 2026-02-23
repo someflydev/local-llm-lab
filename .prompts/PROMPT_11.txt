@@ -15,6 +15,9 @@ Add a minimal, deterministic operator automation layer that wraps the existing r
 - `README.md` (optional small update: add a short “deterministic checks” command block if needed)
 - `RELEASE_CHECKLIST.md` (optional small update: reference new `make` targets if added)
 
+## Cross-Prompt Safety Rule
+- If you touch shared files (`README.md`, `RELEASE_CHECKLIST.md`), extend existing content and preserve prior Stage-1/Stage-2 behavior; do not overwrite unrelated sections.
+
 ## Required Outcomes
 - Add a small `Makefile` with discoverable targets for repeatable local operations.
 - Provide one deterministic bring-up command path (non-live if Ollama unavailable).
@@ -27,8 +30,8 @@ Add a minimal, deterministic operator automation layer that wraps the existing r
 - `check` (lint + unit/integration tests already in repo; no live Ollama dependency)
 - `verify` (wraps existing `scripts/verify.sh`; may use live Ollama if available)
 - `smoke-fixture` (deterministic non-live smoke path using existing tests/fixtures)
-- `clean-runs-preview` (shows what would be deleted under `runs/`, no deletion)
-- `clean-runs` (explicit deletion of generated run artifacts only; require confirmation variable such as `CONFIRM=1`)
+- `clean-runs-preview` (shows what would be deleted under `runs/`, no deletion; support `RUNS_DIR` override, default `runs`)
+- `clean-runs` (explicit deletion of generated run artifacts only; require confirmation variable such as `CONFIRM=1`; support `RUNS_DIR` override, default `runs`)
 
 ## Acceptance Criteria (Executable / Verifiable)
 Run and verify all of the following:
@@ -40,8 +43,10 @@ Run and verify all of the following:
    - Expected: exits 0, runs deterministic smoke coverage (fixture/mocked tests only)
 4. `make clean-runs-preview`
    - Expected: exits 0, prints candidate run paths without deleting
-5. `make clean-runs`
-   - Expected: refuses unless `CONFIRM=1` is set; with `CONFIRM=1`, deletes only generated subdirectories/files inside `runs/` and preserves tracked docs/scripts/code
+5. Destructive cleanup verification must use a temporary directory, not the repo’s real `runs/`:
+   - Example setup: `tmp_runs="$(mktemp -d)"; mkdir -p "$tmp_runs"/demo_run`
+   - Run: `make clean-runs RUNS_DIR="$tmp_runs" CONFIRM=1`
+   - Expected: refuses without `CONFIRM=1`; with `CONFIRM=1`, deletes only generated subdirectories/files under the provided `RUNS_DIR` and does not touch tracked docs/scripts/code
 
 ## Anti-Scope (Do NOT Do)
 - Do not add Docker, Compose, Taskfile, Justfile, or another orchestration system
@@ -73,4 +78,3 @@ Run and verify all of the following:
 ## Sequencing Notes
 - Can run independently on the current Stage-1 repo state
 - Improves operator ergonomics for all later Stage-2 prompts
-

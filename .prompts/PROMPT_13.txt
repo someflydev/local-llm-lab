@@ -16,6 +16,9 @@ Strengthen confidence in non-live behavior by adding high-value edge-case integr
 - `scripts/bootstrap_mac.sh` (optional small shellcheck/syntax fixes only if findings require)
 - `scripts/run_ludwig_prompting.sh` (optional small shellcheck/syntax fixes only if findings require)
 
+## Cross-Prompt Safety Rule
+- Extend existing `.github/workflows/ci.yml` and preserve prior jobs/steps (including any Stage-2 additions); do not overwrite the file or remove unrelated checks.
+
 ## Required Test Focus (Minimum Coverage)
 - Ingest/retrieve edge cases:
   - empty corpus or missing markdown files (clear failure/warning behavior)
@@ -29,16 +32,20 @@ Strengthen confidence in non-live behavior by adding high-value edge-case integr
   - background job poll for unknown job ID
 - Script health:
   - `bash -n` syntax checks on `scripts/*.sh`
-  - wrapper scripts print expected usage/help or graceful skips
+  - explicit CI-safe wrapper checks:
+    - `scripts/run_ludwig_prompting.sh --check-only` exits 0 (installed or graceful skip)
+    - `scripts/live_ollama_smoke.sh --help` prints usage if that script exists (to support independent prompt execution)
 
 ## Acceptance Criteria (Executable / Verifiable)
 1. `bash -n scripts/*.sh`
    - Expected: exits 0
-2. `uv run --python 3.12 python -m unittest tests.test_integration_edge_cases tests.test_script_smoke`
+2. `./scripts/run_ludwig_prompting.sh --check-only`
+   - Expected: exits 0 (either compatibility check passes or script exits gracefully when isolated Ludwig env is absent)
+3. `uv run --python 3.12 python -m unittest tests.test_integration_edge_cases tests.test_script_smoke`
    - Expected: exits 0 and does not require Ollama
-3. `uv run --python 3.12 python -m unittest discover -s tests`
+4. `uv run --python 3.12 python -m unittest discover -s tests`
    - Expected: exits 0 with expanded coverage
-4. `.github/workflows/ci.yml`
+5. `.github/workflows/ci.yml`
    - Expected: includes explicit shell syntax/smoke step(s) and still keeps live-Ollama tests out of default CI
 
 ## Anti-Scope (Do NOT Do)
@@ -66,4 +73,3 @@ Strengthen confidence in non-live behavior by adding high-value edge-case integr
 ## Sequencing Notes
 - Can run independently on current repo
 - Complements `PROMPT_12` by hardening deterministic paths while keeping live smoke optional
-

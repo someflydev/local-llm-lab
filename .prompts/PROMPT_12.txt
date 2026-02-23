@@ -16,6 +16,9 @@ Add an optional, gated live-runtime smoke test path that exercises a real Ollama
 - `PROMPT_EXECUTION_OPERATORS_GUIDE.md` (small update: explain prerequisites and gating env vars)
 - `RELEASE_CHECKLIST.md` (small update: include optional live smoke proof step)
 
+## Cross-Prompt Safety Rule
+- Extend existing docs/workflows and preserve prior Stage-1/Stage-2 behavior; do not overwrite unrelated sections in `README.md`, `PROMPT_EXECUTION_OPERATORS_GUIDE.md`, or `RELEASE_CHECKLIST.md`.
+
 ## Required Outcomes
 - A live smoke test exists and is skipped unless explicitly enabled
 - The test validates:
@@ -34,7 +37,7 @@ Add an optional, gated live-runtime smoke test path that exercises a real Ollama
 ## Acceptance Criteria (Executable / Verifiable)
 1. `uv run --python 3.12 python -m unittest discover -s tests`
    - Expected: exits 0 and does **not** run live smoke by default
-2. `./scripts/live_ollama_smoke.sh --help` (or `-h`, if implemented)
+2. `./scripts/live_ollama_smoke.sh --help`
    - Expected: prints usage/gating instructions
 3. `LAB_LIVE_OLLAMA_SMOKE=1 ./scripts/live_ollama_smoke.sh`
    - Expected on configured machine: exits 0 and prints model + short response summary
@@ -71,4 +74,3 @@ Add an optional, gated live-runtime smoke test path that exercises a real Ollama
 ## Sequencing Notes
 - Can run independently, but benefits from `PROMPT_11` (`make` targets) for operator ergonomics
 - Directly addresses the report’s single most leverage improvement (backend/runtime portion only)
-

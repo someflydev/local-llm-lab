@@ -15,8 +15,13 @@ Introduce lightweight, machine-checkable schemas/specs for key run artifacts (`s
 - `scripts/sync_run_artifact_schemas.py` (new; `--check` and `--write`)
 - `scripts/validate_run_artifacts.py` (new; validates a run dir using pydantic models)
 - `tests/test_run_artifact_schemas.py` (new)
+- `tests/fixtures/run_artifacts/sample_run/summary.json` (new fixture)
+- `tests/fixtures/run_artifacts/sample_run/results.jsonl` (new fixture)
 - `.github/workflows/ci.yml` (modify to run schema sync check and/or artifact-model tests)
 - `RELEASE_CHECKLIST.md` (optional small note to run schema check)
+
+## Cross-Prompt Safety Rule
+- Extend existing `.github/workflows/ci.yml` and `RELEASE_CHECKLIST.md`; preserve prior Stage-1/Stage-2 jobs, steps, and checklist items.
 
 ## Required Outcomes
 - Pydantic models encode the minimum stable contract for:
@@ -27,15 +32,20 @@ Introduce lightweight, machine-checkable schemas/specs for key run artifacts (`s
   - `--write` to regenerate checked-in schemas
   - `--check` to fail if checked-in schemas drift from model definitions
 - A validation script can validate an existing run directory and report human-readable errors
+- Include a deterministic fixture run directory under `tests/fixtures/run_artifacts/sample_run/` for validator tests/acceptance; validating a historical `runs/<run_id>` is optional extra evidence
 
 ## Acceptance Criteria (Executable / Verifiable)
-1. `uv run --python 3.12 python scripts/sync_run_artifact_schemas.py --check`
+1. `uv run --python 3.12 python scripts/sync_run_artifact_schemas.py --write`
+   - Expected: generates/updates checked-in schemas deterministically
+2. `uv run --python 3.12 python scripts/sync_run_artifact_schemas.py --check`
    - Expected: exits 0 after schemas are generated and in sync
-2. `uv run --python 3.12 python -m unittest tests.test_run_artifact_schemas`
+3. `uv run --python 3.12 python -m unittest tests.test_run_artifact_schemas`
    - Expected: exits 0 and covers model validation + schema sync behavior
-3. `uv run --python 3.12 python scripts/validate_run_artifacts.py --run-dir runs/20260223T015121Z_rag_baseline`
-   - Expected: exits 0 if sample run dir exists; otherwise prints a clear skip/not-found message and non-fatal usage guidance
-4. `.github/workflows/ci.yml`
+4. `uv run --python 3.12 python scripts/validate_run_artifacts.py --run-dir tests/fixtures/run_artifacts/sample_run`
+   - Expected: exits 0 using the deterministic fixture run directory
+5. Optional extra evidence: `uv run --python 3.12 python scripts/validate_run_artifacts.py --run-dir runs/20260223T015121Z_rag_baseline`
+   - Expected: exits 0 if the historical sample run dir exists; otherwise prints clear not-found guidance
+6. `.github/workflows/ci.yml`
    - Expected: includes schema sync check and/or tests in default CI without adding new external services
 
 ## Anti-Scope (Do NOT Do)
@@ -64,4 +74,3 @@ Introduce lightweight, machine-checkable schemas/specs for key run artifacts (`s
 ## Sequencing Notes
 - Can run independently and provides automation hooks for future tooling
 - Best placed after test/CI and release-hygiene prompts, but does not depend on them
-

@@ -16,6 +16,9 @@ Improve contributor clarity and release readiness with a small, local-first work
 - `README.md` (optional small contribution/link section)
 - `Makefile` (optional: add `release-check` target if `PROMPT_11` created a `Makefile`)
 
+## Cross-Prompt Safety Rule
+- Extend existing `README.md`, `RELEASE_CHECKLIST.md`, and `Makefile` (if present); preserve prior Stage-1/Stage-2 content and targets.
+
 ## Required Outcomes
 - Contributors have a clear path for:
   - environment setup
@@ -28,15 +31,20 @@ Improve contributor clarity and release readiness with a small, local-first work
   - version consistency (`pyproject.toml` vs `src/lab/__init__.py`)
   - `ruff` and `unittest` pass
   - required files exist (`LICENSE`, `README.md`, `CHANGELOG.md`, `RELEASE_CHECKLIST.md`)
+- Required CLI modes for `scripts/release_prep.sh`:
+  - strict mode (`--check`) that enforces clean git working tree for real release use
+  - prompt-safe mode (`--check --allow-dirty` or equivalent) for verifying behavior immediately after the prompt edits but before commit
 
 ## Acceptance Criteria (Executable / Verifiable)
 1. `./scripts/release_prep.sh --help` (or no-arg usage text)
    - Expected: documents checks and exit codes
-2. `./scripts/release_prep.sh --check`
-   - Expected: exits 0 on clean repo, prints a concise checklist/result summary
-3. `rg -n \"^# Contributing|## Development Workflow|## Testing|## Prompt Changes\" CONTRIBUTING.md`
+2. `./scripts/release_prep.sh --check --allow-dirty` (or equivalent documented flag)
+   - Expected: exits 0 during prompt execution before commit, prints a concise checklist/result summary, and reports dirty-tree status clearly
+3. `./scripts/release_prep.sh --check`
+   - Expected: strict mode exists and documents/enforces clean-tree behavior for real release use (may fail during prompt execution if repo is dirty)
+4. `rg -n \"^# Contributing|## Development Workflow|## Testing|## Prompt Changes\" CONTRIBUTING.md`
    - Expected: all required sections present
-4. If `Makefile` exists: `make release-check`
+5. If `Makefile` exists: `make release-check`
    - Expected: wraps `scripts/release_prep.sh --check` (optional but preferred)
 
 ## Anti-Scope (Do NOT Do)
@@ -65,4 +73,3 @@ Improve contributor clarity and release readiness with a small, local-first work
 ## Sequencing Notes
 - Can run independently
 - Pairs well with `PROMPT_11` (`Makefile`) and `PROMPT_12` (optional live smoke docs/checks), but should not require them
-
