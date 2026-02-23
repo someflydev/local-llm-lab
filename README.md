@@ -105,8 +105,10 @@ Install:
 
 ```bash
 uv venv .venv-ludwig --python 3.12
-uv pip install --python .venv-ludwig/bin/python "ludwig==0.10.4"
+uv pip install --python .venv-ludwig/bin/python "ludwig==0.10.4" "PyYAML>=6.0.1"
 ```
+
+The extra `PyYAML` constraint avoids a Python 3.12 source-build failure when the resolver picks `pyyaml==6.0`.
 
 If you intentionally use legacy `ludwig==0.7.5`, prefer Python 3.11 because its dependency chain may fail to build on Python 3.12 (`scikit-learn==1.1.3` + `distutils` removal).
 

@@ -28,8 +28,10 @@ Default helper/CI target: Ludwig `0.10.4` on Python 3.12.
 
 ```bash
 uv venv .venv-ludwig --python 3.12
-uv pip install --python .venv-ludwig/bin/python "ludwig==0.10.4"
+uv pip install --python .venv-ludwig/bin/python "ludwig==0.10.4" "PyYAML>=6.0.1"
 ```
+
+The extra `PyYAML` constraint avoids a Python 3.12 source-build failure when the resolver selects `pyyaml==6.0`.
 
 Legacy note: if you intentionally use `ludwig==0.7.5`, prefer Python 3.11 because it may resolve `scikit-learn==1.1.3`, which is not Python 3.12-friendly.
 

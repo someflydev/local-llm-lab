@@ -100,8 +100,10 @@ Default helper target: `ludwig==0.10.4` on Python 3.12.
 
 ```bash
 uv venv .venv-ludwig --python 3.12
-uv pip install --python .venv-ludwig/bin/python "ludwig==0.10.4"
+uv pip install --python .venv-ludwig/bin/python "ludwig==0.10.4" "PyYAML>=6.0.1"
 ./scripts/run_ludwig_prompting.sh
 ```
+
+The extra `PyYAML` constraint avoids the `pyyaml==6.0` build issue on Python 3.12.
 
 If you intentionally install legacy `ludwig==0.7.5`, use Python 3.11 for that isolated venv.

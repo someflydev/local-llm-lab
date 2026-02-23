@@ -30,7 +30,10 @@ jobs:
         env:
           LUDWIG_PYTHON_VERSION: "3.12"
           LUDWIG_EXPECTED_VERSION: "0.10.4"
+          LUDWIG_PYYAML_SPEC: "PyYAML>=6.0.1"
         run: |
           uv venv .venv-ludwig --python "${LUDWIG_PYTHON_VERSION}"
-          uv pip install --python .venv-ludwig/bin/python "ludwig==${LUDWIG_EXPECTED_VERSION}"
+          uv pip install --python .venv-ludwig/bin/python \
+            "ludwig==${LUDWIG_EXPECTED_VERSION}" \
+            "${LUDWIG_PYYAML_SPEC}"
           ./scripts/run_ludwig_prompting.sh --check-only
