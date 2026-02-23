@@ -1,0 +1,51 @@
+{
+  "additionalProperties": true,
+  "properties": {
+    "aggregate_scores": {
+      "additionalProperties": true,
+      "title": "Aggregate Scores",
+      "type": "object"
+    },
+    "config_name": {
+      "title": "Config Name",
+      "type": "string"
+    },
+    "latency_stats": {
+      "additionalProperties": true,
+      "title": "Latency Stats",
+      "type": "object"
+    },
+    "models": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Models",
+      "type": "array"
+    },
+    "question_count": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Question Count"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "config_name",
+    "models",
+    "aggregate_scores",
+    "latency_stats"
+  ],
+  "title": "RunSummary",
+  "type": "object"
+}

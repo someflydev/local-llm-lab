@@ -1,0 +1,102 @@
+{
+  "$defs": {
+    "CitationItem": {
+      "additionalProperties": true,
+      "properties": {
+        "chunk_id": {
+          "title": "Chunk Id",
+          "type": "integer"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "chunk_id"
+      ],
+      "title": "CitationItem",
+      "type": "object"
+    },
+    "RetrievedItem": {
+      "additionalProperties": true,
+      "properties": {
+        "chunk_id": {
+          "title": "Chunk Id",
+          "type": "integer"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "score": {
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "path",
+        "chunk_id",
+        "score"
+      ],
+      "title": "RetrievedItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "properties": {
+    "answer_text": {
+      "title": "Answer Text",
+      "type": "string"
+    },
+    "citations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/CitationItem"
+      },
+      "title": "Citations",
+      "type": "array"
+    },
+    "latency_ms": {
+      "title": "Latency Ms",
+      "type": "number"
+    },
+    "model": {
+      "title": "Model",
+      "type": "string"
+    },
+    "question_id": {
+      "title": "Question Id",
+      "type": "string"
+    },
+    "retrieved": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RetrievedItem"
+      },
+      "title": "Retrieved",
+      "type": "array"
+    },
+    "score": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "title": "Score"
+    }
+  },
+  "required": [
+    "question_id",
+    "model",
+    "score",
+    "latency_ms",
+    "answer_text"
+  ],
+  "title": "RunResultRow",
+  "type": "object"
+}

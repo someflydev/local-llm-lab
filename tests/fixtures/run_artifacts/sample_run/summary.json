@@ -1,0 +1,26 @@
+{
+  "run_id": "20260223T000000Z_sample",
+  "config_name": "sample_fixture",
+  "models": [
+    "fake-chat"
+  ],
+  "aggregate_scores": {
+    "overall": {
+      "accuracy_proxy": 1.0,
+      "count": 1,
+      "total": 1
+    }
+  },
+  "latency_stats": {
+    "overall": {
+      "avg_ms": 12.3,
+      "count": 1,
+      "max_ms": 12.3,
+      "min_ms": 12.3
+    }
+  },
+  "question_count": 1,
+  "embed_model": "fake-embed",
+  "dataset_path": "data/eval.jsonl"
+}
+

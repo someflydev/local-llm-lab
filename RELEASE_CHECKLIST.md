@@ -8,6 +8,7 @@ Use this lightweight checklist before tagging or sharing a release of `local-llm
 - Confirm working tree status and review intended changes (`git status`, `git diff`)
 - Run `ruff check .`
 - Run `.venv/bin/python -m unittest discover -s tests`
+- Run `uv run --python 3.12 python scripts/sync_run_artifact_schemas.py --check`
 - (Optional local runtime) Run `uv run lab doctor` and one CLI smoke command (`chat` or `rag`)
 - (Optional local runtime) Run `LAB_LIVE_OLLAMA_SMOKE=1 ./scripts/live_ollama_smoke.sh` and capture success/skip output as evidence
 - Review `README.md` and key docs for command/path drift
