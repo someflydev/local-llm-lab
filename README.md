@@ -106,6 +106,7 @@ Install:
 ```bash
 uv venv .venv-ludwig --python 3.12
 printf 'numpy<2\n' > /tmp/ludwig-runtime-constraints.txt
+printf 'torch==2.3.*\n' >> /tmp/ludwig-runtime-constraints.txt
 printf 'Cython<3\n' > /tmp/ludwig-build-constraints.txt
 uv pip install --python .venv-ludwig/bin/python \
   --constraints /tmp/ludwig-runtime-constraints.txt \
@@ -114,6 +115,7 @@ uv pip install --python .venv-ludwig/bin/python \
 ```
 
 The runtime constraint avoids NumPy 2.x ABI mismatches with older Ludwig-transitive binary wheels (for example `pyarrow`).
+Pinning `torch==2.3.*` keeps the environment compatible with `torchtext==0.18.0`, which Ludwig imports transitively.
 The build constraint avoids a Python 3.12 source-build failure for `pyyaml==6.0`
 in Ludwig's dependency set by forcing a PyYAML-compatible Cython version (`Cython<3`).
 

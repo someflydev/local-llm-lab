@@ -49,14 +49,16 @@ if [[ -z "${experiment_help}" ]]; then
   exit 1
 fi
 if [[ "${experiment_help}" != *"--config"* ]]; then
+  guidance_msg="[ludwig] Verify the command syntax for your version before running."
   if [[ "${experiment_help}" == *"Traceback (most recent call last):"* ]]; then
     echo "[ludwig] Failed to load 'ludwig experiment' help due to a runtime/import error." >&2
+    guidance_msg="[ludwig] Verify Ludwig environment/runtime compatibility before running."
   else
     echo "[ludwig] This Ludwig CLI variant does not advertise '--config' for 'experiment'." >&2
   fi
   echo "[ludwig] Captured 'ludwig experiment --help' output:" >&2
   printf '%s\n' "${experiment_help}" >&2
-  echo "[ludwig] Verify the command syntax for your version before running." >&2
+  echo "${guidance_msg}" >&2
   exit 1
 fi
 

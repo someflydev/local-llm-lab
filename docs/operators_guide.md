@@ -101,6 +101,7 @@ Default helper target: `ludwig==0.10.4` on Python 3.12.
 ```bash
 uv venv .venv-ludwig --python 3.12
 printf 'numpy<2\n' > /tmp/ludwig-runtime-constraints.txt
+printf 'torch==2.3.*\n' >> /tmp/ludwig-runtime-constraints.txt
 printf 'Cython<3\n' > /tmp/ludwig-build-constraints.txt
 uv pip install --python .venv-ludwig/bin/python \
   --constraints /tmp/ludwig-runtime-constraints.txt \
@@ -110,6 +111,7 @@ uv pip install --python .venv-ludwig/bin/python \
 ```
 
 The runtime constraint avoids NumPy 2.x ABI mismatches with older Ludwig-transitive binary wheels.
+Pinning `torch==2.3.*` keeps the environment compatible with the `torchtext` version Ludwig resolves.
 The build constraint avoids the `pyyaml==6.0` build issue on Python 3.12 by forcing `Cython<3`.
 
 If you intentionally install legacy `ludwig==0.7.5`, use Python 3.11 for that isolated venv.
