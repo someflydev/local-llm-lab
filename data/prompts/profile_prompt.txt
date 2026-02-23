@@ -1,0 +1,2 @@
+Explain, in 5 concise bullet points, how to keep a local laptop-based RAG experiment responsive when using Ollama. Mention context size, retrieved chunks, model size, and storage discipline.
+

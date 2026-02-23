@@ -11,6 +11,7 @@ from lab.doctor import run_doctor
 from lab.ingest import ingest_corpus
 from lab.model_registry import match_installed_to_policy, recommend
 from lab.ollama_client import OllamaClient
+from lab.profile import profile as run_profile
 from lab.rag import answer_question
 from lab.reporting import compare_runs, print_run_summary
 from lab.retrieval import retrieve
@@ -304,6 +305,33 @@ def _cmd_web(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_profile(args: argparse.Namespace) -> int:
+    try:
+        summary = run_profile(
+            model=args.model,
+            prompt_file=args.prompt_file,
+            n=args.n,
+            num_ctx=args.num_ctx,
+            temperature=args.temperature,
+        )
+    except Exception as exc:
+        console.print(f"[red]Profile failed:[/red] {exc}")
+        return 1
+
+    console.print(f"[bold]Model:[/bold] {summary['model']}")
+    console.print(f"[bold]Prompt file:[/bold] {summary['prompt_file']}")
+    console.print(f"[bold]Runs:[/bold] {summary['n']}")
+    console.print(f"[bold]Average wall:[/bold] {summary['average_wall_ms']} ms")
+    console.print(f"[bold]Average chars/sec:[/bold] {summary['average_chars_per_sec']}")
+    console.print("[bold]Per-run[/bold]")
+    for row in summary["runs"]:
+        console.print(
+            f"- run={row['run_index']} wall_ms={row['wall_ms']} chars={row['chars']} "
+            f"chars_per_sec={row['chars_per_sec']}"
+        )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lab", description="Local LLM Lab CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -374,6 +402,19 @@ def build_parser() -> argparse.ArgumentParser:
     p_web = subparsers.add_parser("web", help="Run the local web UI")
     p_web.add_argument("--port", type=int, default=8000)
     p_web.set_defaults(func=_cmd_web)
+
+    p_profile = subparsers.add_parser("profile", help="Profile local generation latency/throughput proxies")
+    p_profile.add_argument("--model", required=True, help="Chat model to profile")
+    p_profile.add_argument("--n", type=int, default=5, help="Number of runs")
+    p_profile.add_argument(
+        "--prompt-file",
+        default="data/prompts/profile_prompt.txt",
+        dest="prompt_file",
+        help="Prompt text file",
+    )
+    p_profile.add_argument("--num-ctx", type=int, default=4096, dest="num_ctx")
+    p_profile.add_argument("--temperature", type=float, default=0.2)
+    p_profile.set_defaults(func=_cmd_profile)
 
     return parser
 
