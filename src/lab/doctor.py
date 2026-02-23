@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import platform
 import subprocess
 from dataclasses import dataclass
@@ -8,6 +9,7 @@ import httpx
 from rich.console import Console
 from rich.table import Table
 
+from lab.modelspec import get_hardware_profile
 from lab.ollama_client import parse_ollama_list_output
 
 
@@ -43,6 +45,42 @@ def run_doctor(base_url: str = "http://127.0.0.1:11434") -> int:
 
     code, out = _run_cmd(["ollama", "--version"])
     results.append(CheckResult("ollama_cli", "PASS" if code == 0 else "FAIL", out or "no output"))
+
+    try:
+        profile = get_hardware_profile()
+        results.append(
+            CheckResult(
+                "hardware_profile",
+                "PASS",
+                (
+                    "mac_m3_pro_18gb_sonoma_14_5 "
+                    f"(safe num_ctx={profile.safe_default_num_ctx}, cautious max={profile.cautious_max_num_ctx}, "
+                    f"recommended class={profile.recommended_max_class})"
+                ),
+            )
+        )
+    except Exception as exc:
+        results.append(CheckResult("hardware_profile", "WARN", f"Could not load experiments/models.yaml: {exc}"))
+
+    free_storage_override = os.getenv("FREE_STORAGE_GB")
+    if free_storage_override:
+        try:
+            free_storage_gb = float(free_storage_override)
+            status = "WARN" if free_storage_gb < 30 else "PASS"
+            detail = f"FREE_STORAGE_GB override={free_storage_gb:g} GB"
+            if status == "WARN":
+                detail += " (tight for multiple local model pulls; prune unused models)"
+            results.append(CheckResult("free_storage", status, detail))
+        except ValueError:
+            results.append(CheckResult("free_storage", "WARN", f"Invalid FREE_STORAGE_GB value: {free_storage_override!r}"))
+    else:
+        results.append(
+            CheckResult(
+                "free_storage",
+                "WARN",
+                "Free storage not auto-detected. Set FREE_STORAGE_GB to enable an advisory check.",
+            )
+        )
 
     ollama_http_ok = False
     try:
@@ -86,4 +124,3 @@ def run_doctor(base_url: str = "http://127.0.0.1:11434") -> int:
 
     failed = any(r.status == "FAIL" for r in results)
     return 1 if failed else 0
-

@@ -4,8 +4,10 @@ import argparse
 import sys
 
 from rich.console import Console
+from rich.table import Table
 
 from lab.doctor import run_doctor
+from lab.model_registry import match_installed_to_policy, recommend
 from lab.ollama_client import OllamaClient
 
 
@@ -36,7 +38,52 @@ def _cmd_models_list(_: argparse.Namespace) -> int:
 
 
 def _cmd_models_status(_: argparse.Namespace) -> int:
-    console.print("[yellow]`lab models status` is a stub in PROMPT_01 and will be fully implemented in PROMPT_02.[/yellow]")
+    try:
+        matches = match_installed_to_policy()
+    except Exception as exc:
+        console.print(f"[red]Failed to evaluate model policy status:[/red] {exc}")
+        return 1
+
+    table = Table(title="Model Policy Status")
+    table.add_column("Bucket", style="bold")
+    table.add_column("Models")
+
+    ordered_buckets = [
+        ("available_known_good", "Available known-good"),
+        ("available_preferred_variants", "Available preferred variants"),
+        ("available_embeddings", "Available embeddings"),
+        ("available_candidates", "Available candidates"),
+        ("missing_recommended", "Missing recommended"),
+    ]
+
+    for key, label in ordered_buckets:
+        entries = matches.get(key, [])
+        text = ", ".join(entry.name for entry in entries) if entries else "-"
+        table.add_row(label, text)
+
+    console.print(table)
+    return 0
+
+
+def _cmd_models_recommend(args: argparse.Namespace) -> int:
+    try:
+        rec = recommend(args.task)
+    except Exception as exc:
+        console.print(f"[red]Failed to compute recommendation:[/red] {exc}")
+        return 1
+
+    console.print(f"[bold]Task:[/bold] {args.task}")
+    console.print(f"[bold]Chosen model:[/bold] {rec['chosen_model'] or 'None'}")
+    console.print(f"[bold]Reason:[/bold] {rec['reason']}")
+    console.print(
+        "[bold]Defaults:[/bold] "
+        f"temperature={rec['defaults']['temperature']} "
+        f"num_ctx={rec['defaults']['num_ctx']}"
+    )
+    if rec["suggested_pulls"]:
+        console.print("[bold]Suggested pulls:[/bold]")
+        for name in rec["suggested_pulls"]:
+            console.print(f"- ollama pull {name}")
     return 0
 
 
@@ -98,8 +145,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_models_list = models_sub.add_parser("list", help="List installed Ollama models")
     p_models_list.set_defaults(func=_cmd_models_list)
 
-    p_models_status = models_sub.add_parser("status", help="Show model registry status (stub in PROMPT_01)")
+    p_models_status = models_sub.add_parser("status", help="Show model registry policy vs installed models")
     p_models_status.set_defaults(func=_cmd_models_status)
+
+    p_models_recommend = models_sub.add_parser("recommend", help="Recommend a model for a task")
+    p_models_recommend.add_argument("--task", required=True, choices=["chat", "rag_qa", "embeddings"])
+    p_models_recommend.set_defaults(func=_cmd_models_recommend)
 
     p_chat = subparsers.add_parser("chat", help="Run one-shot local chat inference")
     p_chat.add_argument("--prompt", required=True, help="User prompt text")
@@ -124,4 +175,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-

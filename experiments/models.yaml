@@ -1,0 +1,77 @@
+version: 2
+
+hardware_profiles:
+  mac_m3_pro_18gb_sonoma_14_5:
+    unified_memory_gb: 18
+    free_storage_gb: 115
+    recommended_max_class: "8b"
+    safe_default_num_ctx: 4096
+    cautious_max_num_ctx: 8192
+    notes:
+      - "Prioritize 8B-class models and small embedding models."
+      - "Avoid pulling too many models due to storage."
+      - "If you experience swap pressure, reduce num_ctx and use smaller models."
+
+known_good:
+  - name: llama3
+    provider: ollama
+    roles: [chat, rag_qa, general]
+    default_temperature: 0.2
+    default_num_ctx: 4096
+    priority: 110
+    notes: "Primary stable default; best fit for 18GB unified memory when kept to 8B-class."
+
+preferred_variants:
+  - name: llama3.1
+    provider: ollama
+    roles: [chat, rag_qa]
+    default_temperature: 0.2
+    default_num_ctx: 4096
+    priority: 95
+    notes: "Variant if present; keep context conservative."
+  - name: llama3.2
+    provider: ollama
+    roles: [chat, rag_qa, fast]
+    default_temperature: 0.3
+    default_num_ctx: 4096
+    priority: 92
+    notes: "Often smaller/faster variant."
+
+embedding_models:
+  - name: nomic-embed-text
+    provider: ollama
+    roles: [embeddings]
+    priority: 110
+    notes: "Best default embedding model for this hardware profile."
+  - name: mxbai-embed-large
+    provider: ollama
+    roles: [embeddings]
+    priority: 95
+    notes: "Fallback embedding model; may be heavier."
+
+candidates_reasoning:
+  - name: deepseek-r1
+    provider: ollama
+    roles: [reasoning, rag_qa]
+    default_temperature: 0.1
+    default_num_ctx: 4096
+    priority: 70
+    notes: "Candidate only; keep num_ctx conservative on 18GB."
+
+candidates_long_context:
+  - name: kimi
+    provider: ollama
+    roles: [chat, long_context]
+    default_temperature: 0.2
+    default_num_ctx: 8192
+    priority: 65
+    notes: "Candidate only; long context may increase memory pressure."
+
+fallback_rules:
+  prefer_roles:
+    rag_qa: [chat, reasoning, general]
+    chat: [chat, general]
+    embeddings: [embeddings]
+  min_priority: 50
+  notes: "If llama3 is not installed, select highest priority available model matching role."
+
