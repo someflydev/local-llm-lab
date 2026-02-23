@@ -1,5 +1,7 @@
 Now that the repo is runnable, generate the real README.md.
 
+Replace the placeholder `README.md` created in `PROMPT_01.txt` with the real README.
+
 README must include:
 1) What this lab is
 2) Quickstart:

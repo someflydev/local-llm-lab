@@ -24,6 +24,7 @@ Explain:
   - smaller chunk size
 
 CLI:
+- Extend the existing CLI; preserve prior subcommands/behavior unless explicitly changed.
 - lab profile --model llama3 --n 5 --prompt-file data/prompts/profile_prompt.txt
 
 Verification:

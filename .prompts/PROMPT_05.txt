@@ -7,6 +7,7 @@ Create:
 Config fields:
 - name
 - task: rag_eval
+- corpus_dir: data/corpus
 - chat_models: [..]
 - embed_model: (string or "auto")
 - k
@@ -19,9 +20,12 @@ Config fields:
 Implement:
 1) src/lab/runner.py
 - run_config(path) creates runs/<run_id>/
+- `run_config(path)` must rebuild a fresh retrieval index from `corpus_dir` for each run using `chunk_size_chars` and `overlap_chars`, and store it under `runs/<run_id>/index/` before evaluation.
 - outputs:
   - results.jsonl (one row per question per model)
   - summary.json (aggregates)
+- `summary.json` must include at least: run_id, config_name, started_at, finished_at, corpus_dir, dataset_path, models, question_count, aggregate_scores, latency_stats
+- Use `summary.json` for aggregate display and quick listing; use `results.jsonl` as the source of detailed per-question/per-model data (including for web run detail views).
 - scoring:
   - For answerable: +1 if all expected_keywords appear (case-insensitive) OR at least N of them (choose a reasonable heuristic, document it).
   - For unanswerable: +1 if response includes exact refusal string.
@@ -33,6 +37,7 @@ Implement:
 - compare two runs
 
 CLI:
+- Extend the existing CLI; preserve prior subcommands/behavior unless explicitly changed.
 - lab run --config experiments/rag_baseline.yaml
 - lab report --run runs/<run_id>
 - lab compare --runs runs/<id1> runs/<id2>

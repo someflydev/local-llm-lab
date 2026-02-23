@@ -2,7 +2,7 @@ Create the repository scaffold and baseline implementation using uv/ruff/orjson/
 
 You must:
 - Create pyproject.toml configured for uv, ruff, and a console script `lab`.
-- Create uv.lock by instructing how to run uv sync (do not commit instructions only; still create the repo files now).
+- Do not hand-write `uv.lock`. Generate it via `uv lock` or `uv sync` if available in the current environment. If generation is blocked (for example by offline constraints), note the deferral clearly and still create the repo files now.
 - Use src/ layout: src/lab/...
 - Create a minimal Makefile OR scripts/ commands (either is fine), but prefer scripts/ with explicit steps.
 - Add .gitignore that ignores runs/, .venv-like artifacts if any appear, __pycache__, .ruff_cache, .pytest_cache, etc.

@@ -17,4 +17,4 @@ Ensure:
 
 Also add:
 - docs/operators_guide.md
-This should mirror the Operator’s Guide steps (brew installs, starting ollama, minimal model pulls, uv python install).
+This should cover the concrete operator steps introduced earlier (Homebrew installs, starting Ollama, minimal model pulls, `uv python install`, `uv sync`, and basic verification commands).

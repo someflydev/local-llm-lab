@@ -118,6 +118,7 @@ Now implement:
   3) Otherwise select the highest priority installed model whose roles match task or fallback role mapping.
 
 3) Update CLI (src/lab/cli.py) to fully implement:
+- Extend the existing CLI; preserve prior subcommands/behavior unless explicitly changed.
 - lab models status
 - lab models recommend --task chat|rag_qa|embeddings
 

@@ -9,6 +9,7 @@ Prompt behavior requirements:
 - MUST cite sources (path + chunk_id) in the answer.
 - If context is insufficient: respond exactly:
   "I don't know from the provided documents."
+- For the insufficient-context refusal case, return only that exact sentence (no extra text, no citations in the answer body). In the structured return value, `citations` may be an empty list.
 
 Implement:
 3) src/lab/rag.py
@@ -24,6 +25,7 @@ Implement:
     - latency_ms
 
 Update CLI:
+- Extend the existing CLI; preserve prior subcommands/behavior unless explicitly changed.
 - lab rag --index runs/index --question "..." [--model] [--embed-model] [--k] [--num-ctx] [--temperature]
 
 Create eval questions:
@@ -37,7 +39,7 @@ Each line includes:
 
 Logging:
 - Log each rag call to runs/logs/*.jsonl with event="rag" and payload containing:
-  - question_id
+  - question_id (nullable for ad hoc CLI calls; use null or auto-generate if no dataset id exists)
   - model
   - embed_model
   - k

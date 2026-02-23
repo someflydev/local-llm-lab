@@ -1,0 +1,30 @@
+---
+Round: 1
+Timestamp: 2026-02-23T01:06:36Z
+Summary: Applied conservative prompt clarifications to remove contradictions, preserve CLI continuity, and tighten sequencing contracts before the first build run.
+Changes Applied:
+- .prompts/PROMPT_00_s.txt :: added `ludwig/` to repo layout and clarified file-content reporting rules for large docs/datasets :: reduce path inconsistency and output-volume risk without changing scope :: PF-004, PF-007
+- .prompts/PROMPT_01.txt :: clarified `uv.lock` must be generated (not hand-written) and may be explicitly deferred if blocked :: prevent invalid lockfile behavior on constrained runs :: PF-003
+- .prompts/PROMPT_03.txt :: added CLI preservation guard for `lab ingest`/`lab retrieve` changes :: prevent later prompt regressions removing existing commands :: PF-005
+- .prompts/PROMPT_04.txt :: resolved refusal-vs-citation contradiction; made `question_id` nullable for ad hoc CLI calls; added CLI preservation guard :: restore executable RAG contract and logging clarity :: PF-001, PF-005, PF-006
+- .prompts/PROMPT_05.txt :: added `corpus_dir` config field; specified per-run index rebuild under `runs/<run_id>/index/`; defined minimum `summary.json` keys; added CLI preservation guard :: remove eval harness ambiguity and stabilize web/reporting dependency :: PF-002, PF-005, PF-008
+- .prompts/PROMPT_06.txt :: added CLI preservation guard for `lab web` command addition :: prevent CLI regression during UI prompt :: PF-005
+- .prompts/PROMPT_07.txt :: clarified Ludwig configs are created in top-level `ludwig/` directory :: align path intent with repo layout :: PF-007
+- .prompts/PROMPT_08.txt :: replaced vague “mirror Operator’s Guide” wording with concrete operator steps :: improve execution readiness and clarity :: PF-010
+- .prompts/PROMPT_09.txt :: added CLI preservation guard for profiling command addition :: prevent CLI regression during profiling prompt :: PF-005
+- .prompts/PROMPT_10.txt :: explicitly instructs replacing placeholder README from `PROMPT_01.txt` :: avoid duplicate/parallel README behavior :: PF-009
+Notes / Followups:
+- PF-002 human intent resolved: experiment runs must rebuild an index from `data/corpus` using config chunk params.
+- Re-run preflight on the updated prompt set to verify no new dependency or wording conflicts were introduced.
+---
+---
+Round: 2
+Timestamp: 2026-02-23T01:10:21Z
+Summary: Applied final low-risk clarifications from Round 2 to reduce CLI regression risk and tighten corpus/run-detail execution guidance.
+Changes Applied:
+- .prompts/PROMPT_02.txt :: added CLI preservation guard before `lab models status` / `lab models recommend` additions :: prevent early CLI regressions during model registry work :: PF-005
+- .prompts/PROMPT_03.txt :: clarified that the 10-file corpus may split/expand the listed topic areas while staying in scope :: avoid arbitrary topic drift from topic-count mismatch :: PF-011
+- .prompts/PROMPT_05.txt :: clarified `summary.json` is for aggregates while `results.jsonl` is the detailed source for run detail views :: reduce reporting/web coupling ambiguity :: PF-012
+Notes / Followups:
+- Re-run preflight to confirm no remaining BLOCKER/HIGH issues.
+---

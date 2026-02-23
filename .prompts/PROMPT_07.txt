@@ -17,7 +17,7 @@ Create datasets:
 - data/ludwig/prompting.jsonl (50-150 rows, small)
 - Include an instruction-style task aligned with the corpus domain (CLI/RAG tips).
 
-Create configs:
+Create configs in the top-level `ludwig/` directory:
 - ludwig/prompting.yaml (runnable)
 - ludwig/icl.yaml (if supported; otherwise “template” clearly marked)
 - ludwig/tiny_finetune.yaml (template; only runnable if feasible)

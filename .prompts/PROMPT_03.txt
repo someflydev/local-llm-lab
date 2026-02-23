@@ -23,6 +23,7 @@ Create corpus:
   - profiling concepts
   - Ludwig overview
   - common failure modes (hallucination, context overflow)
+- It is fine to split broad topics across multiple files and/or cover subtopics, as long as the corpus totals 10 markdown files and stays aligned to this lab.
 
 Implement:
 1) src/lab/text_chunking.py
@@ -47,6 +48,7 @@ Implement:
   - path, chunk_id, score, snippet, full_text
 
 CLI:
+- Extend the existing CLI; preserve prior subcommands/behavior unless explicitly changed.
 - lab ingest --corpus data/corpus --index runs/index --embed-model (optional)
 - lab retrieve --index runs/index --query "..." --k 5 --embed-model (optional)
 

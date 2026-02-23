@@ -26,6 +26,7 @@ Repo design constraints:
   - scripts/
   - data/
   - experiments/
+  - ludwig/  (Ludwig configs/templates)
   - runs/  (gitignored)
   - docs/
 - Provide a single entry CLI: `lab` (console script via pyproject).
@@ -34,7 +35,8 @@ Repo design constraints:
 
 Quality rules:
 - Build a runnable repo, not just advice.
-- Whenever you generate files: show file paths and full contents.
+- Whenever you generate files: show file paths for all created/modified files.
+- Show full contents for source/config/script/template files unless a later prompt explicitly says otherwise; for large docs/datasets/generated bulk content, show concise summaries plus representative excerpts unless exact full content is requested.
 - Provide verification steps after each major milestone.
 - Be explicit about assumptions vs discovery (e.g., model availability).
 - If a model name is missing, list available alternatives and proceed.

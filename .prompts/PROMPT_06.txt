@@ -21,6 +21,7 @@ UI requirements:
 - Show model used, latency, and for RAG show citations + retrieved snippets.
 
 CLI:
+- Extend the existing CLI; preserve prior subcommands/behavior unless explicitly changed.
 - lab web --port 8000
 
 Verification:
